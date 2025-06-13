@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import AnswerButton from './components/AnswerButton';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
+const robotImg = require('../assets/images/robot2.png');
 
 export default function QuizScreen() {
   const router = useRouter();
@@ -12,7 +16,40 @@ export default function QuizScreen() {
   const [score, setScore] = useState(Number(initialScore || 0));
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
+  const totalTime = 10;
+  const [timer, setTimer] = React.useState(totalTime);
+
+  React.useEffect(() => {
+    if (selected !== null) return;
+    if (timer === 0) {
+      if (current < questions.length - 1) {
+        setSelected(null);
+        setCurrent((c) => c + 1);
+        setTimer(totalTime);
+      } else {
+        setShowResult(true);
+        router.replace({ pathname: '/quiz-result', params: { score: String(score), total: String(questions.length), topic } });
+      }
+      return;
+    }
+    const t = setTimeout(() => setTimer(timer - 1), 1000);
+    return () => clearTimeout(t);
+  }, [timer, selected]);
+
+  // Sau khi chọn đáp án, tự động chuyển câu sau 5 giây
+  React.useEffect(() => {
+    if (selected === null) return;
+    const timeout = setTimeout(() => {
+      if (current < questions.length - 1) {
+        setSelected(null);
+        setCurrent((c) => c + 1);
+        setTimer(totalTime);
+      } else {
+        setShowResult(true);
+      }
+    }, 5000);
+    return () => clearTimeout(timeout);
+  }, [selected]);
 
   if (!questions.length) {
     return <View style={styles.root}><Text style={styles.error}>No questions found.</Text></View>;
@@ -47,31 +84,73 @@ export default function QuizScreen() {
 
   return (
     <View style={styles.root}>
-      <View style={styles.topBar}>
-        <Text style={styles.timeText}>9:41</Text>
+      <View style={styles.quizTopBar}>
+        <View style={{ flex: 1, alignItems: 'flex-start' }}>
+          <Text style={styles.quizIndex}>{current + 1}/{questions.length}</Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <AnimatedCircularProgress
+            size={44}
+            width={5}
+            fill={(timer / totalTime) * 100}
+            tintColor="#1976d2"
+            backgroundColor="#e0e0e0"
+            rotation={0}
+            style={styles.quizProgress}
+          >
+            {() => <Text style={styles.quizProgressText}>{timer.toString().padStart(2, '0')}</Text>}
+          </AnimatedCircularProgress>
+        </View>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          <TouchableOpacity style={styles.quizCloseBtn} onPress={() => router.replace('/') }>
+            <Ionicons name="close" size={28} color="#222" />
+          </TouchableOpacity>
+        </View>
       </View>
-      <Text style={styles.topic}>{topic}</Text>
-      <Text style={styles.progress}>{current + 1}/{questions.length}</Text>
-      <Text style={styles.questionText}>{q.question}</Text>
-      <View style={styles.answersWrap}>
-        {q.answers.map((ans: any, idx: number) => {
-          let style = styles.answerDefault;
-          if (selected !== null) {
-            if (idx === q.answers.findIndex((a: any) => a.correct)) style = styles.answerGreen;
-            else if (idx === selected && !ans.correct) style = styles.answerRed;
-            else style = styles.answerDefault;
-          }
-          return (
-            <TouchableOpacity
-              key={ans.text}
-              style={[styles.answerBox, style, { top: idx * 60 + 10 }]}
-              disabled={selected !== null}
-              onPress={() => handleSelect(idx)}
-            >
-              <Text style={styles.answerText}>{ans.text}</Text>
-            </TouchableOpacity>
-          );
-        })}
+      <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+        <View style={styles.robotWrap}>
+          <Image source={robotImg} style={styles.robot} />
+        </View>
+        <View style={styles.questionBox}>
+          <Text style={styles.questionText}>{q.question}</Text>
+        </View>
+      </View>
+      <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+        <View style={styles.answersWrap}>
+          {q.answers.map((ans: any, idx: number) => {
+            let color: 'blue' | 'red' | 'orange' | 'green' = 'blue';
+            if (idx === 0) color = 'blue';
+            else if (idx === 1) color = 'red';
+            else if (idx === 2) color = 'orange';
+            else if (idx === 3) color = 'green';
+            let showIcon = false;
+            let iconType: 'check' | 'close' | undefined = undefined;
+            let variant: 'default' | 'correct' | 'wrong' | 'faded' | 'warning' = 'default';
+            if (selected !== null) {
+              if (ans.correct) {
+                variant = 'correct';
+                showIcon = true;
+                iconType = 'check';
+              } else if (idx === selected && !ans.correct) {
+                variant = 'wrong';
+                showIcon = true;
+                iconType = 'close';
+              }
+            }
+            return (
+              <AnswerButton
+                key={ans.text}
+                text={ans.text}
+                color={color}
+                variant={variant}
+                onPress={() => handleSelect(idx)}
+                disabled={selected !== null}
+                showIcon={showIcon}
+                iconType={iconType}
+              />
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -115,12 +194,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   questionText: {
-    fontSize: 20,
+    fontSize: 28,
     color: '#222',
     textAlign: 'center',
-    marginBottom: 24,
     marginHorizontal: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
+    lineHeight: 38,
+  },
+  questionBox: {
+    minHeight: 80,
+    maxHeight: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 32,
   },
   answersWrap: {
     width: 382,
@@ -207,5 +293,39 @@ const styles = StyleSheet.create({
     color: '#1c58f2',
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  quizTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    marginBottom: 8,
+    paddingHorizontal: 18,
+    width: '100%',
+  },
+  quizIndex: {
+    fontSize: 16,
+    color: '#222',
+    fontWeight: '600',
+  },
+  quizProgress: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quizProgressText: {
+    fontSize: 16,
+    color: '#1976d2',
+    fontWeight: 'bold',
+  },
+  quizCloseBtn: {
+    padding: 4,
+  },
+  robotWrap: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  robot: {
+    width: 100,
+    height: 100,
   },
 }); 

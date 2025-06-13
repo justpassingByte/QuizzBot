@@ -5,6 +5,8 @@ export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000
 export async function fetchQuizzes() {
   try {
     const res = await axios.get(`${API_URL}/api/quizzes`);
+    console.log(res.data);
+    
     return res.data;
   } catch (e) {
     // fallback mock
@@ -56,7 +58,7 @@ export async function fetchQuizzes() {
 // Tạo quiz mới, nhận topic và config, trả về quizId
 export async function createQuiz(topic: string, config: any, level: string = 'intermediate') {
   const payload = { topic, config, level };
-  const res = await axios.post(`${API_URL}/api/quizzes`, payload);
+  const res = await axios.post(`${API_URL}/api/create`, payload);
   return res.data?.id || res.data?.quiz?.id;
 }
 
