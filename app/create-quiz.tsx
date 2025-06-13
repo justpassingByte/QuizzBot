@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { createQuiz, analyzeContext } from '../constants/api';
 
 const { width } = Dimensions.get('window');
 
