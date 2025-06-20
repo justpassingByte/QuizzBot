@@ -78,6 +78,7 @@ export async function getQuestionById(quizId: string) {
     }
     return [];
   } catch (e) {
+    console.log(e);
     // fallback mock
     return [
       {
