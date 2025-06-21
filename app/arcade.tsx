@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { fetchQuizzes, getQuestionById } from '../constants/api';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
+const robotImg = require('../assets/images/robot2.png');
 
 export default function ArcadeScreen() {
   const [quizzes, setQuizzes] = useState<any[]>([]);
@@ -25,6 +27,15 @@ export default function ArcadeScreen() {
     router.push({ pathname: '../quiz', params: { topic: quiz.topic, questions: JSON.stringify(questions) } });
   };
 
+  // Màu gradient cho từng category
+  const gradients = [
+    ['#FFD600', '#FF9900'], // Science - vàng cam
+    ['#3BE65F', '#1CBF3B'], // Maths - xanh lá
+    ['#FF9800', '#FF5E62'], // Social - cam đỏ
+    ['#F75555', '#FF416C'], // Technology - đỏ hồng
+    ['#A259FF', '#3B2FE3'], // Movies - tím
+  ];
+
   return (
     <View style={styles.root}>
       {/* Layered background boxes */}
@@ -32,32 +43,38 @@ export default function ArcadeScreen() {
       <View style={styles.bgCyan2} />
       <View style={styles.bgCyan3} />
       <View style={styles.bgBlue} />
-      {/* Top bar */}
-      <View style={styles.topBar}>
-        <Text style={styles.timeText}>9:41</Text>
-        {/* ...icon bar omitted for brevity... */}
+      {/* Robot và tiêu đề */}
+      <View style={{ alignItems: 'center', marginTop: 48, marginBottom: 12 }}>
+        <Text style={styles.arcadeTitle}>Arcade</Text>
+        <Image source={robotImg} style={styles.robot} />
       </View>
-      {/* Title */}
-      <Text style={styles.arcadeTitle}>Arcade</Text>
-      {/* Loading */}
-      {loading ? (
-        <ActivityIndicator size="large" color="#fff" style={{ marginTop: 100 }} />
-      ) : (
-        <ScrollView contentContainerStyle={styles.quizList} showsVerticalScrollIndicator={false}>
-          <Text style={styles.quizTitle}>Choose your topic</Text>
-          {quizzes.map((quiz) => (
-            <TouchableOpacity
+      {/* Khung chọn category */}
+      <View style={styles.categoryBox}>
+        <Text style={styles.categoryTitle}>Choose your category{"\n"}Explore!</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#fff" style={{ marginTop: 40 }} />
+        ) : (
+          quizzes.map((quiz, idx) => (
+            <LinearGradient
               key={quiz.id}
+              colors={gradients[idx % gradients.length] as [string, string]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
               style={styles.quizBtn}
-              onPress={() => handleSelectQuiz(quiz)}
-              disabled={selecting}
             >
-              <Text style={styles.quizBtnText}>{quiz.topic}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
-      {selecting && <ActivityIndicator size="large" color="#fff" style={{ marginTop: 24 }} />}
+              <TouchableOpacity
+                style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+                onPress={() => handleSelectQuiz(quiz)}
+                disabled={selecting}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.quizBtnText}>{quiz.topic}</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          ))
+        )}
+        {selecting && <ActivityIndicator size="large" color="#fff" style={{ marginTop: 24 }} />}
+      </View>
     </View>
   );
 }
@@ -108,61 +125,60 @@ const styles = StyleSheet.create({
     backgroundColor: '#005fff',
     zIndex: -1,
   },
-  topBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: width,
-    height: 44,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    paddingLeft: 23,
-    paddingTop: 11,
-    zIndex: 2,
-  },
-  timeText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
   arcadeTitle: {
-    position: 'absolute',
-    top: 60,
-    left: width / 2 - 60,
-    fontSize: 32,
+    fontSize: 36,
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
-    width: 120,
-    zIndex: 3,
+    marginBottom: 8,
+    marginTop: 0,
   },
-  quizList: {
+  robot: {
+    width: 90,
+    height: 90,
+    resizeMode: 'contain',
+    marginBottom: 8,
+  },
+  categoryBox: {
+    backgroundColor: '#0047ab',
+    borderRadius: 28,
+    paddingVertical: 28,
+    paddingHorizontal: 18,
     alignItems: 'center',
-    paddingBottom: 40,
+    width: width * 0.85,
+    alignSelf: 'center',
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  quizTitle: {
+  categoryTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 18,
+    lineHeight: 24,
+  },
+  quizBtn: {
+    borderRadius: 24,
+    marginBottom: 18,
+    width: 260,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+    overflow: 'hidden',
+  },
+  quizBtnText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 24,
-  },
-  quizBtn: {
-    backgroundColor: '#fff',
-    borderRadius: 30,
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-    marginBottom: 16,
-    alignItems: 'center',
-    width: 300,
-  },
-  quizBtnText: {
-    color: '#005fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  quizInfo: {
-    color: '#888',
-    fontSize: 14,
-    marginTop: 4,
+    textAlign: 'center',
+    letterSpacing: 1,
   },
 }); 

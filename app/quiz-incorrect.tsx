@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import AnswerButton from './components/AnswerButton';
+
 const { width } = Dimensions.get('window');
+const robotImg = require('../assets/images/robot2.png');
 
 export default function QuizIncorrectScreen() {
   const router = useRouter();
@@ -11,6 +14,8 @@ export default function QuizIncorrectScreen() {
 
   // Convert questionsParam back to array if available, otherwise pass empty array
   const questions = questionsParam ? JSON.parse(questionsParam as string) : [];
+  const currentIdx = Number(current) || 0;
+  const selected = params.selected !== undefined ? Number(params.selected) : undefined;
 
   const isLastQuestion = Number(current) + 1 === Number(total);
   const nextQuestionIndex = Number(current) + 1;
@@ -20,45 +25,81 @@ export default function QuizIncorrectScreen() {
       router.replace({ pathname: '/quiz-result', params: { score, total, topic, suggestedTopics: params.suggestedTopics || '[]' } });
     } else {
       router.replace({
-        pathname: '/quiz',
+        pathname: '../quiz',
         params: {
           topic,
-          questions: JSON.stringify(questions), // Đảm bảo truyền lại toàn bộ questions
+          questions: JSON.stringify(questions),
           current: String(nextQuestionIndex),
           score,
           total,
+          selected: undefined,
         }
       });
     }
   };
 
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      handleNext();
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [current]);
+
   return (
     <View style={styles.root}>
-      {/* Top bar */}
-      <View style={styles.topBar}>
-        <Text style={styles.timeText}>9:41</Text>
-      </View>
-
-      {/* Banner Incorrect */}
-      <View style={styles.bannerIncorrect}>
-        <Text style={styles.bannerTitle}>Incorrect!</Text>
-        <View style={styles.bannerBox}>
-          <Text style={styles.bannerBoxText}>Thật tiếc, bạn đã trả lời sai.</Text>
+      <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+        {/* Banner Incorrect */}
+        <View style={styles.bannerIncorrect}>
+          <Text style={styles.bannerTitle}>Incorrect!</Text>
+          <Text style={styles.bannerBox}>That was close</Text>
+        </View>
+        {/* Robot */}
+        <View style={styles.robotWrap}>
+          <Image source={robotImg} style={styles.robot} />
+        </View>
+        {/* Question */}
+        <View style={styles.questionBox}>
+          <Text style={styles.questionText}>{questions[currentIdx]?.question}</Text>
         </View>
       </View>
-
-      {/* Explanation */}
-      <View style={styles.explanationContainer}>
-        <Text style={styles.explanationTitle}>Giải thích:</Text>
-        <ScrollView style={styles.explanationScrollView}>
-          <Text style={styles.explanationText}>{explanation}</Text>
-        </ScrollView>
+      <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+        {/* Answers */}
+        <View style={styles.answersWrap}>
+          {questions[currentIdx]?.answers.map((ans: any, idx: number) => {
+            const isCorrect = ans.correct;
+            const isSelected = idx === selected;
+            let variant: 'default' | 'correct' | 'wrong' | 'faded' | 'warning' = 'faded';
+            let showIcon = false;
+            let iconType: 'check' | 'close' | undefined = undefined;
+            if (isCorrect) {
+              variant = 'correct';
+              showIcon = true;
+              iconType = 'check';
+            } else if (isSelected) {
+              variant = 'wrong';
+              showIcon = true;
+              iconType = 'close';
+            }
+            return (
+              <AnswerButton
+                key={ans.text}
+                text={ans.text}
+                variant={variant}
+                showIcon={showIcon}
+                iconType={iconType}
+                disabled
+              />
+            );
+          })}
+        </View>
+        {/* Explanation */}
+        <View style={styles.explanationContainer}>
+          <Text style={styles.explanationTitle}>Giải thích:</Text>
+          <ScrollView style={styles.explanationScrollView}>
+            <Text style={styles.explanationText}>{explanation}</Text>
+          </ScrollView>
+        </View>
       </View>
-
-      {/* Next/Finish Button */}
-      <TouchableOpacity style={styles.nextBtn} onPress={handleNext}>
-        <Text style={styles.nextBtnText}>{isLastQuestion ? 'Finish Quiz' : 'Next Question'}</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -90,30 +131,53 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   bannerIncorrect: {
+    backgroundColor: '#f75555',
     alignItems: 'center',
-    backgroundColor: 'rgba(247,85,85,0.9)',
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 20,
-    width: '100%',
+    paddingVertical: 24,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    marginBottom: 12,
   },
   bannerTitle: {
     color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   bannerBox: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 32,
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '500',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 6,
   },
-  bannerBoxText: {
-    color: '#f75555',
+  robotWrap: {
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  robot: {
+    width: 90,
+    height: 90,
+    resizeMode: 'contain',
+  },
+  questionBox: {
+    marginBottom: 18,
+  },
+  questionText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    color: '#222',
     textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  answersWrap: {
+    width: 340,
+    alignSelf: 'center',
+    marginBottom: 18,
   },
   explanationContainer: {
     backgroundColor: '#f5f5f5',
