@@ -16,7 +16,9 @@ export default function HomeScreen() {
         <View style={styles.topBar}>
           {/* Profile */}
           <View style={styles.profileRow}>
+            <TouchableOpacity onPress={() => router.push('../setting')}>
             <Image source={avatarUri ? { uri: avatarUri } : defaultAvatar} style={styles.avatar} />
+            </TouchableOpacity>
             <Text style={styles.profileName}>John Brown</Text>
           </View>
           <View style={styles.topRight}>
