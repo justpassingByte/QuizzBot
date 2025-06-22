@@ -1,41 +1,62 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import useButtonSound from '../components/useButtonSound';
+import { useMusic } from '../context/MusicContext';
 
 export default function HomeScreen() {
   const router = useRouter();
-  // Avatar mặc định, sau này thay bằng avatarUri từ API
-  const avatarUri = null; // ví dụ: lấy từ API
-  const defaultAvatar = require('../../assets/images/avatar-default.png'); // Đặt ảnh placeholder vào đây
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
+  const avatarUri = null;
+  const defaultAvatar = require('../../assets/images/avatar-default.png');
+
   return (
     <LinearGradient colors={['#0a4cff', '#1c58f2']} style={styles.gradient}>
-      <SafeAreaView style={{flex: 1}}>
-        {/* Top bar */}
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.topBar}>
-          {/* Profile */}
           <View style={styles.profileRow}>
-            <Image source={avatarUri ? { uri: avatarUri } : defaultAvatar} style={styles.avatar} />
+            <TouchableOpacity
+              onPress={() => {
+                playButtonSound();
+                router.push('../setting');
+              }}
+            >
+              <Image
+                source={avatarUri ? { uri: avatarUri } : defaultAvatar}
+                style={styles.avatar}
+              />
+            </TouchableOpacity>
             <Text style={styles.profileName}>John Brown</Text>
           </View>
           <View style={styles.topRight}>
-            {/* Coin */}
             <View style={styles.coinBox}>
               <Text style={styles.coinText}>301</Text>
               <Image source={require('../../assets/images/coin.png')} style={styles.coinIcon} />
             </View>
-            {/* Medal */}
             <Image source={require('../../assets/images/medal.png')} style={styles.medalIcon} />
-            {/* Bell */}
-            <Ionicons name="notifications-outline" size={24} color="#fff" style={styles.bellIcon} />
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color="#fff"
+              style={styles.bellIcon}
+            />
           </View>
         </View>
-        {/* Coins floating */}
-        <Image source={require('../../assets/images/coin1.png')} style={[styles.floatingCoin, {top: 200, left: 20, width: 48, height: 48}]} />
-        <Image source={require('../../assets/images/coin2.png')} style={[styles.floatingCoin, {top: 120, right: 30, width: 64, height: 64}]} />
-        <Image source={require('../../assets/images/coin3.png')} style={[styles.floatingCoin, {bottom: 200, left: 40, width: 36, height: 36}]} />
-        {/* Main content: Robot center, slogan & buttons bottom */}
+        <Image
+          source={require('../../assets/images/coin1.png')}
+          style={[styles.floatingCoin, { top: 200, left: 20, width: 48, height: 48 }]}
+        />
+        <Image
+          source={require('../../assets/images/coin2.png')}
+          style={[styles.floatingCoin, { top: 120, right: 30, width: 64, height: 64 }]}
+        />
+        <Image
+          source={require('../../assets/images/coin3.png')}
+          style={[styles.floatingCoin, { bottom: 200, left: 40, width: 36, height: 36 }]}
+        />
         <View style={styles.flexGrow}>
           <View style={styles.robotCenterWrap}>
             <Image source={require('../../assets/images/robot1.png')} style={styles.robot} />
@@ -45,16 +66,27 @@ export default function HomeScreen() {
           <Text style={styles.slogan}>
             Unleash the power of AI!{"\n"}Discover quizzes made just for you
           </Text>
-          {/* Play Now Button */}
-          <TouchableOpacity style={styles.playNowBtn} onPress={() => router.push('../arcade')}>
+          <TouchableOpacity
+            style={styles.playNowBtn}
+            onPress={() => {
+              playButtonSound(); // Phát âm thanh khi nhấn
+              router.push('/arcade');
+            }}
+          >
             <Text style={styles.playNowText}>Play Now</Text>
           </TouchableOpacity>
-          {/* Create Quiz Button */}
-          <TouchableOpacity style={styles.createQuizBtn} onPress={() => router.push('../create-quiz')}>
-            <Text style={styles.createQuizText}>Create your own quiz by <Text style={{fontWeight:'bold'}}>QUIZZIE BOT</Text></Text>
+          <TouchableOpacity
+            style={styles.createQuizBtn}
+            onPress={() => {
+              playButtonSound(); // Phát âm thanh khi nhấn
+              router.push('/create-quiz');
+            }}
+          >
+            <Text style={styles.createQuizText}>
+              Create your own quiz by <Text style={{ fontWeight: 'bold' }}>QUIZZIE BOT</Text>
+            </Text>
           </TouchableOpacity>
         </View>
-        {/* Book icon (bottom right) */}
         <Image source={require('../../assets/images/book.png')} style={styles.bookIcon} />
       </SafeAreaView>
     </LinearGradient>
@@ -64,12 +96,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
+    marginTop: 30,
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    paddingHorizontal: 0,
     paddingTop: 8,
     height: 44,
   },
