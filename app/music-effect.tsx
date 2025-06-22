@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import useBackgroundMusic from './components/audio';
 import { useMusic } from './context/MusicContext';
 
 
@@ -12,7 +13,12 @@ export default function MusicEffectsScreen() {
   const [soundEffectsEnabled, setSoundEffectsEnabled] = useState(true);
   const [vibrationsEnabled, setVibrationsEnabled] = useState(true);
 
- 
+  const { toggleMusic } = useBackgroundMusic(musicEnabled);
+
+  useEffect(() => {
+    toggleMusic(musicEnabled);
+  }, [musicEnabled, toggleMusic]);
+
   return (
     <LinearGradient colors={['#0a4cff', '#1c58f2']} style={styles.gradient}>
       <SafeAreaView style={styles.container}>
@@ -51,24 +57,24 @@ export default function MusicEffectsScreen() {
             />
           </View>
         </View>
-        {/* <View style={styles.tabBar}>
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/index')}>
+        <View style={styles.tabBar}>
+          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('../index')}>
             <Ionicons name="home" size={24} color="#bbb" />
             <Text style={styles.tabText}>Home</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/profile')}>
+          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('../profile')}>
             <Ionicons name="person" size={24} color="#bbb" />
             <Text style={styles.tabText}>Profile</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/Leaderboard')}>
+          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('../Leaderboard')}>
             <Ionicons name="trophy" size={24} color="#bbb" />
             <Text style={styles.tabText}>Leaderboard</Text>
           </TouchableOpacity>
-          < TouchableOpacity style={styles.tabItemActive}>
+          <TouchableOpacity style={styles.tabItemActive}>
             <Ionicons name="grid" size={24} color="#1c58f2" />
             <Text style={styles.tabTextActive}>More</Text>
           </TouchableOpacity>
-        </View> */}
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
