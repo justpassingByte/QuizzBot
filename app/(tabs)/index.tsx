@@ -3,11 +3,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import useButtonSound from '../components/useButtonSound';
 import { useMusic } from '../context/MusicContext';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { musicEnabled } = useMusic(); 
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   const avatarUri = null;
   const defaultAvatar = require('../../assets/images/avatar-default.png');
 
@@ -16,7 +18,12 @@ export default function HomeScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.topBar}>
           <View style={styles.profileRow}>
-            <TouchableOpacity onPress={() => router.push('../setting')}>
+            <TouchableOpacity
+              onPress={() => {
+                playButtonSound();
+                router.push('../setting');
+              }}
+            >
               <Image
                 source={avatarUri ? { uri: avatarUri } : defaultAvatar}
                 style={styles.avatar}
@@ -59,12 +66,21 @@ export default function HomeScreen() {
           <Text style={styles.slogan}>
             Unleash the power of AI!{"\n"}Discover quizzes made just for you
           </Text>
-          <TouchableOpacity style={styles.playNowBtn} onPress={() => router.push('/arcade')}>
+          <TouchableOpacity
+            style={styles.playNowBtn}
+            onPress={() => {
+              playButtonSound(); // Phát âm thanh khi nhấn
+              router.push('/arcade');
+            }}
+          >
             <Text style={styles.playNowText}>Play Now</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.createQuizBtn}
-            onPress={() => router.push('/create-quiz')}
+            onPress={() => {
+              playButtonSound(); // Phát âm thanh khi nhấn
+              router.push('/create-quiz');
+            }}
           >
             <Text style={styles.createQuizText}>
               Create your own quiz by <Text style={{ fontWeight: 'bold' }}>QUIZZIE BOT</Text>

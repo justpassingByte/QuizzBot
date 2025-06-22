@@ -1,29 +1,28 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import useBackgroundMusic from './components/audio';
+import useButtonSound from './components/useButtonSound';
 import { useMusic } from './context/MusicContext';
-
 
 export default function MusicEffectsScreen() {
   const router = useRouter();
-  const { musicEnabled, setMusicEnabled } = useMusic();
-  const [soundEffectsEnabled, setSoundEffectsEnabled] = useState(true);
+  const { musicEnabled, setMusicEnabled, soundEffectsEnabled, setSoundEffectsEnabled } = useMusic();
   const [vibrationsEnabled, setVibrationsEnabled] = useState(true);
-
-  const { toggleMusic } = useBackgroundMusic(musicEnabled);
-
-  useEffect(() => {
-    toggleMusic(musicEnabled);
-  }, [musicEnabled, toggleMusic]);
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
 
   return (
     <LinearGradient colors={['#0a4cff', '#1c58f2']} style={styles.gradient}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => {
+              if (soundEffectsEnabled) playButtonSound();
+              router.back();
+            }}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Music & Effects</Text>
@@ -33,7 +32,10 @@ export default function MusicEffectsScreen() {
             <Text style={styles.settingText}>Music</Text>
             <Switch
               value={musicEnabled}
-              onValueChange={setMusicEnabled}
+              onValueChange={(value) => {
+                if (soundEffectsEnabled) playButtonSound();
+                setMusicEnabled(value);
+              }}
               trackColor={{ false: '#767577', true: '#81b0ff' }}
               thumbColor={musicEnabled ? '#f5dd4b' : '#f4f3f4'}
             />
@@ -42,7 +44,10 @@ export default function MusicEffectsScreen() {
             <Text style={styles.settingText}>Sound Effects</Text>
             <Switch
               value={soundEffectsEnabled}
-              onValueChange={setSoundEffectsEnabled}
+              onValueChange={(value) => {
+                if (soundEffectsEnabled) playButtonSound(); // Chỉ phát khi đang bật
+                setSoundEffectsEnabled(value);
+              }}
               trackColor={{ false: '#767577', true: '#81b0ff' }}
               thumbColor={soundEffectsEnabled ? '#f5dd4b' : '#f4f3f4'}
             />
@@ -51,30 +56,57 @@ export default function MusicEffectsScreen() {
             <Text style={styles.settingText}>Vibrations</Text>
             <Switch
               value={vibrationsEnabled}
-              onValueChange={setVibrationsEnabled}
+              onValueChange={(value) => {
+                if (soundEffectsEnabled) playButtonSound();
+                setVibrationsEnabled(value);
+              }}
               trackColor={{ false: '#767577', true: '#81b0ff' }}
               thumbColor={vibrationsEnabled ? '#f5dd4b' : '#f4f3f4'}
             />
           </View>
         </View>
-        <View style={styles.tabBar}>
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('../index')}>
+        {/* <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => {
+              if (soundEffectsEnabled) playButtonSound();
+              router.push('/index');
+            }}
+          >
             <Ionicons name="home" size={24} color="#bbb" />
             <Text style={styles.tabText}>Home</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('../profile')}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => {
+              if (soundEffectsEnabled) playButtonSound();
+              router.push('/profile');
+            }}
+          >
             <Ionicons name="person" size={24} color="#bbb" />
             <Text style={styles.tabText}>Profile</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('../Leaderboard')}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => {
+              if (soundEffectsEnabled) playButtonSound();
+              router.push('/Leaderboard');
+            }}
+          >
             <Ionicons name="trophy" size={24} color="#bbb" />
             <Text style={styles.tabText}>Leaderboard</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItemActive}>
+          <TouchableOpacity
+            style={styles.tabItemActive}
+            onPress={() => {
+              if (soundEffectsEnabled) playButtonSound();
+              router.push('/Settings');
+            }}
+          >
             <Ionicons name="grid" size={24} color="#1c58f2" />
             <Text style={styles.tabTextActive}>More</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </SafeAreaView>
     </LinearGradient>
   );
