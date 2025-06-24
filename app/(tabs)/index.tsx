@@ -20,8 +20,8 @@ export default function HomeScreen() {
           <View style={styles.profileRow}>
             <TouchableOpacity
               onPress={() => {
-                playButtonSound();
-                router.push('../setting');
+                playButtonSound(); 
+                router.push('/profile');
               }}
             >
               <Image
@@ -37,12 +37,20 @@ export default function HomeScreen() {
               <Image source={require('../../assets/images/coin.png')} style={styles.coinIcon} />
             </View>
             <Image source={require('../../assets/images/medal.png')} style={styles.medalIcon} />
-            <Ionicons
-              name="notifications-outline"
+           
+            <TouchableOpacity
+              onPress={() => {
+                playButtonSound(); 
+                router.push('../setting');
+              }}
+            >
+               <Ionicons
+              name="settings-outline"
               size={24}
               color="#fff"
               style={styles.bellIcon}
             />
+            </TouchableOpacity>
           </View>
         </View>
         <Image
@@ -105,6 +113,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingTop: 8,
     height: 44,
+    marginRight: 34,
   },
   timeText: {
     fontSize: 16,
@@ -162,6 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: '#fff',
+    height: 32,
   },
   floatingCoin: {
     position: 'absolute',
