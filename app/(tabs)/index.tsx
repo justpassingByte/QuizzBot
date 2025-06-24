@@ -36,8 +36,16 @@ export default function HomeScreen() {
               <Text style={styles.coinText}>301</Text>
               <Image source={require('../../assets/images/coin.png')} style={styles.coinIcon} />
             </View>
-            <Image source={require('../../assets/images/medal.png')} style={styles.medalIcon} />
-           
+
+           <TouchableOpacity
+              onPress={() => {
+                playButtonSound(); 
+                router.push('../leaderboard');
+              }}
+            >
+              <Image source={require('../../assets/images/medal.png')} style={styles.medalIcon} />
+
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
                 playButtonSound(); 
