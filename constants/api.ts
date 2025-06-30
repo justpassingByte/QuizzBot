@@ -1,5 +1,5 @@
 import axios from 'axios';
-export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+export const API_URL = 'http://192.168.1.5:3000';
 
 // Lấy danh sách quiz từ API thật, fallback mock nếu lỗi
 export async function fetchQuizzes() {
@@ -100,4 +100,18 @@ export async function getQuestionById(quizId: string) {
 export async function analyzeContext(topic: string) {
   const res = await axios.post(`${API_URL}/api/context-analysis`, { topic });
   return res.data;
+}
+
+// Cập nhật chủ đề yêu thích của người dùng
+export async function updateUserFavoriteTopics(userId: string, topics: string[]) {
+  try {
+    const res = await axios.put(`${API_URL}/api/users/${userId}/favorite-topics`, {
+      topics: topics,
+      action: 'replace' // Hoặc 'add', 'remove' tùy theo yêu cầu
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error updating user favorite topics:', error);
+    throw error;
+  }
 } 

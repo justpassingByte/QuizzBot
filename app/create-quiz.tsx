@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, Alert, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -86,10 +86,7 @@ export default function CreateQuizScreen() {
   };
 
   return (
-    <View style={styles.root}>
-      <View style={styles.topBar}>
-        <Text style={styles.timeText}>9:41</Text>
-      </View>
+    <SafeAreaView style={styles.root}>
       <Text style={styles.title}>Create your own quiz</Text>
       <TextInput
         style={styles.input}
@@ -141,7 +138,7 @@ export default function CreateQuizScreen() {
         <Text style={styles.createBtnText}>{loading ? 'Creating...' : 'Create Quiz'}</Text>
       </TouchableOpacity>
       {loading && <ActivityIndicator size="large" color="#1c58f2" style={{ marginTop: 24 }} />}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -151,25 +148,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop: 80,
+    paddingTop: 0,
     paddingHorizontal: 24,
-  },
-  topBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: width,
-    height: 44,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    paddingLeft: 23,
-    paddingTop: 11,
-    zIndex: 2,
-  },
-  timeText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
   },
   title: {
     fontSize: 28,
@@ -177,6 +157,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 32,
     textAlign: 'center',
+    marginTop: 30,
   },
   label: {
     fontSize: 16,

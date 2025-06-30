@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, Image, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import AnswerButton from './components/AnswerButton';
@@ -46,7 +46,7 @@ export default function QuizIncorrectScreen() {
   }, [current]);
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
         {/* Banner Incorrect */}
         <View style={styles.bannerIncorrect}>
@@ -100,7 +100,7 @@ export default function QuizIncorrectScreen() {
           </ScrollView>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -110,25 +110,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 80,
+    paddingTop: 0,
     paddingHorizontal: 24,
-  },
-  topBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: width,
-    height: 44,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    paddingLeft: 23,
-    paddingTop: 11,
-    zIndex: 2,
-  },
-  timeText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
   },
   bannerIncorrect: {
     backgroundColor: '#f75555',
@@ -139,6 +122,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     marginBottom: 12,
+    marginTop: 20,
   },
   bannerTitle: {
     color: '#fff',
@@ -184,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     width: '100%',
-    maxHeight: Dimensions.get('window').height * 0.4, // Giới hạn chiều cao
+    maxHeight: Dimensions.get('window').height * 0.4,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOpacity: 0.05,
@@ -198,7 +182,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   explanationScrollView: {
-    flexGrow: 0, // Quan trọng để ScrollView không chiếm toàn bộ không gian
+    flexGrow: 0,
   },
   explanationText: {
     color: '#222',

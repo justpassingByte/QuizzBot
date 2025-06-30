@@ -1,6 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -39,14 +39,29 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const { selectedAccount: accountTypeParam, selectedTopics: topicsParam } = params;
+
+  const initialFavoriteTopics = topicsParam ? JSON.parse(topicsParam as string) : [];
+  const initialAccountType = accountTypeParam ? (accountTypeParam as string) : '';
+
+  const [accountType, setAccountType] = useState(initialAccountType);
+  const [favoriteTopics, setFavoriteTopics] = useState<string[]>(initialFavoriteTopics);
 
   const handleSignUp = async () => {
     setLoading(true);
+    console.log('Sending signup request with:', {
+      username,
+      email,
+      password,
+      favoriteTopics,
+    });
     try {
       const res = await axios.post(`${API_URL}/api/users`, {
         username,
         email,
-        favoriteTopics: [], 
+        password,
+        favoriteTopics,
       });
       setLoading(false);
       setSuccess(true);
@@ -82,22 +97,22 @@ export default function SignUpScreen() {
       <View style={styles.rowWrap}>
         <View style={{flex:1, marginRight: 8}}>
           <Text style={styles.label}>First Name</Text>
-          <TextInput style={styles.input} placeholder="Andrew Ainsley" value={firstName} onChangeText={setFirstName} />
+          <TextInput style={styles.input} placeholder="Andrew Ainsley" value={firstName} onChangeText={text => { setFirstName(text); console.log('firstName:', text); }} />
         </View>
         <View style={{flex:1, marginLeft: 8}}>
           <Text style={styles.label}>Last Name</Text>
-          <TextInput style={styles.input} placeholder="Andrew Ainsley" value={lastName} onChangeText={setLastName} />
+          <TextInput style={styles.input} placeholder="Andrew Ainsley" value={lastName} onChangeText={text => { setLastName(text); console.log('lastName:', text); }} />
         </View>
       </View>
       <Text style={styles.label}>Email</Text>
-      <TextInput style={styles.input} placeholder="andrew.ainsley@yourdomain.com" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+      <TextInput style={styles.input} placeholder="andrew.ainsley@yourdomain.com" value={email} onChangeText={text => { setEmail(text); console.log('email:', text); }} autoCapitalize="none" keyboardType="email-address" />
       <Text style={styles.label}>Password</Text>
       <View style={styles.passwordRow}>
         <TextInput
           style={[styles.input, {flex:1, marginBottom:0}]}
           placeholder="Password"
           value={password}
-          onChangeText={setPassword}
+          onChangeText={text => { setPassword(text); console.log('password:', text); }}
           secureTextEntry={!showPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{marginLeft:8, marginTop:8}}>
@@ -114,7 +129,7 @@ export default function SignUpScreen() {
         <TouchableOpacity style={styles.socialBtn}><Image source={require('../assets/images/apple.png')} style={styles.socialIcon} /></TouchableOpacity>
         <TouchableOpacity style={styles.socialBtn}><Image source={require('../assets/images/facebook.png')} style={styles.socialIcon} /></TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.nextBtn} onPress={() => setStep(2)}>
+      <TouchableOpacity style={styles.nextBtn} onPress={() => setStep(2)} disabled={!firstName || !lastName || !email || !password}>
         <Text style={styles.nextText}>Next</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -157,7 +172,7 @@ export default function SignUpScreen() {
       <TouchableOpacity style={styles.inputPicker} onPress={() => setShowGenderModal(true)}>
         <Text style={styles.inputPickerText}>{gender}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.signUpBtn} onPress={handleSignUp} disabled={loading}>
+      <TouchableOpacity style={styles.signUpBtn} onPress={handleSignUp} disabled={loading || !username || !email || !password}>
         <Text style={styles.signUpText}>{loading ? 'Signing up...' : 'SIGN UP'}</Text>
       </TouchableOpacity>
       {/* Modal chọn country */}

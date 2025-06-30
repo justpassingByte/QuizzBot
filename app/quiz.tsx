@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AnswerButton from './components/AnswerButton';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -83,7 +83,7 @@ export default function QuizScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <View style={styles.quizTopBar}>
         <View style={{ flex: 1, alignItems: 'flex-start' }}>
           <Text style={styles.quizIndex}>{current + 1}/{questions.length}</Text>
@@ -152,7 +152,7 @@ export default function QuizScreen() {
           })}
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    paddingTop: 0,
   },
   topBar: {
     position: 'absolute',
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 16,
+    marginTop: 0,
     marginBottom: 8,
     paddingHorizontal: 18,
     width: '100%',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -11,7 +11,7 @@ export default function QuizResultScreen() {
   const params = useLocalSearchParams();
   const suggestedTopics = params.suggestedTopics ? JSON.parse(params.suggestedTopics as string) : [];
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <View style={{flex: 2, alignItems: 'center', justifyContent: 'flex-start'}}>
         <Text style={styles.resultTitle}>Result</Text>
         <Image source={trophyImg} style={styles.resultIcon} />
@@ -71,7 +71,7 @@ export default function QuizResultScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -82,25 +82,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
-  topBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: width,
-    height: 44,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    paddingLeft: 23,
-    paddingTop: 11,
-    zIndex: 2,
-  },
-  timeText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+  resultTitle: {
+    fontSize: 28,
+    color: '#222',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 0,
   },
   resultHeader: {
-    marginTop: 60,
+    marginTop: 0,
     alignItems: 'center',
     marginBottom: 24,
   },
@@ -113,12 +103,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.10,
     shadowRadius: 16,
     elevation: 6,
-  },
-  resultTitle: {
-    fontSize: 28,
-    color: '#222',
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
   achievementHeader: {
     fontSize: 22,

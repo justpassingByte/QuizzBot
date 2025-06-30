@@ -5,8 +5,8 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-import { useMusic } from '../context/MusicContext'; // Import useMusic
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import { useMusic } from '../context/MusicContext';
 
 function AppMusicWrapper({ children }: { children: React.ReactNode }) {
   const { musicEnabled } = useMusic();
@@ -21,13 +21,24 @@ export default function TabLayout() {
         <Tabs
           screenOptions={{
             tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+            tabBarInactiveTintColor: '#bbb',
             headerShown: false,
             tabBarButton: HapticTab,
             tabBarBackground: TabBarBackground,
-            tabBarStyle: Platform.select({
-              ios: { position: 'absolute' },
-              default: {},
-            }),
+            tabBarStyle: {
+              ...Platform.select({
+                ios: { position: 'absolute' },
+                default: {},
+              }),
+              height: 64,
+              backgroundColor: '#fff',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              shadowColor: '#000',
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 2,
+            },
           }}
         >
           <Tabs.Screen
@@ -35,6 +46,9 @@ export default function TabLayout() {
             options={{
               title: 'Home',
               tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+              tabBarLabel: ({ focused, color }) => (
+                <Text style={[styles.tabText, focused ? styles.tabTextActive : { color: '#bbb' }]}>Home</Text>
+              ),
             }}
           />
           <Tabs.Screen
@@ -42,25 +56,34 @@ export default function TabLayout() {
             options={{
               title: 'Profile',
               tabBarIcon: ({ color }) => (
-                <IconSymbol size={28} name="paperplane.fill" color={color} />
+                <IconSymbol size={28} name="person.fill" color={color} />
+              ),
+              tabBarLabel: ({ focused, color }) => (
+                <Text style={[styles.tabText, focused ? styles.tabTextActive : { color: '#bbb' }]}>Profile</Text>
               ),
             }}
           />
           <Tabs.Screen
-            name="Leaderboard"
+            name="leaderboard"
             options={{
               title: 'Leaderboard',
               tabBarIcon: ({ color }) => (
-                <IconSymbol size={28} name="pencil.and.outline" color={color} />
+                <IconSymbol size={28} name="trophy.fill" color={color} />
+              ),
+              tabBarLabel: ({ focused, color }) => (
+                <Text style={[styles.tabText, focused ? styles.tabTextActive : { color: '#bbb' }]}>Leaderboard</Text>
               ),
             }}
           />
           <Tabs.Screen
-            name="Settings"
+            name="setting"
             options={{
               title: 'Settings',
               tabBarIcon: ({ color }) => (
-                <IconSymbol size={28} name="gamecontroller.fill" color={color} />
+                <IconSymbol size={28} name="gearshape.fill" color={color} />
+              ),
+              tabBarLabel: ({ focused, color }) => (
+                <Text style={[styles.tabText, focused ? styles.tabTextActive : { color: '#bbb' }]}>Setting</Text>
               ),
             }}
           />
@@ -68,3 +91,15 @@ export default function TabLayout() {
       </AppMusicWrapper>
   );
 }
+
+const styles = StyleSheet.create({
+  tabText: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  tabTextActive: {
+    fontWeight: '700',
+    color: '#1c58f2',
+  },
+}); 

@@ -4,8 +4,8 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import useButtonSound from './components/useButtonSound';
-import { useMusic } from './context/MusicContext';
+import useButtonSound from '../components/useButtonSound';
+import { useMusic } from '../context/MusicContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -154,44 +154,6 @@ export default function ProfileScreen() {
             </View>
           </View>
         </ScrollView>
-
-        {/* Tab Bar */}
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => {
-              if (soundEffectsEnabled) playButtonSound();
-              router.push('/');
-            }}
-          >
-            <Ionicons name="home" size={24} color="#bbb" />
-            <Text style={styles.tabText}>Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItemActive}>
-            <Ionicons name="person" size={24} color="#1c58f2" />
-            <Text style={styles.tabTextActive}>Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => {
-              if (soundEffectsEnabled) playButtonSound();
-              router.push('../leaderboard');
-            }}
-          >
-            <Ionicons name="trophy" size={24} color="#bbb" />
-            <Text style={styles.tabText}>Leaderboard</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => {
-              if (soundEffectsEnabled) playButtonSound();
-              router.push('../settings');
-            }}
-          >
-            <Ionicons name="grid" size={24} color="#bbb" />
-            <Text style={styles.tabText}>More</Text>
-          </TouchableOpacity>
-        </View>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -360,40 +322,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
-  },
-  tabBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 64,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  tabItemActive: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  tabText: {
-    fontSize: 12,
-    color: '#bbb',
-    fontWeight: '500',
-    marginTop: 4,
-  },
-  tabTextActive: {
-    fontSize: 12,
-    color: '#1c58f2',
-    fontWeight: '700',
-    marginTop: 4,
   },
 });
