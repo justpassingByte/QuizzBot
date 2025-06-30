@@ -95,7 +95,9 @@ export default function HomeScreen() {
             style={styles.createQuizBtn}
             onPress={() => {
               playButtonSound(); // Phát âm thanh khi nhấn
-              router.push('/create-quiz');
+              // router.push('/create-quiz');
+              router.push('../optional-survey');
+
             }}
           >
             <Text style={styles.createQuizText}>
