@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Dimensions,
@@ -26,6 +27,7 @@ const OptionalSurveyScreens = () => {
   const [currentScreen, setCurrentScreen] = useState(1);
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedTopics, setSelectedTopics] = useState<Topic[]>([]);
+  const router = useRouter();
 
   const accountTypes: AccountType[] = [
     { id: 'personal', label: 'Cá nhân', icon: 'person', color: '#3b82f6' },
@@ -151,7 +153,13 @@ const OptionalSurveyScreens = () => {
       <Header
         progress={66}
         buttonText="HOÀN THÀNH"
-        onButtonPress={() => console.log('Khảo sát hoàn thành:', { selectedAccount, selectedTopics })}
+        onButtonPress={() => {
+          // Navigate to signup screen with selected data
+          router.push({
+            pathname: '/signup',
+            params: { selectedAccount, selectedTopics: JSON.stringify(selectedTopics) },
+          });
+        }}
         disabled={selectedTopics.length === 0}
         showBack={true}
       />
@@ -386,4 +394,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OptionalSurveyScreens;
+export default OptionalSurveyScreens; 

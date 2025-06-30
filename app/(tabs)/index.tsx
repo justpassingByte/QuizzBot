@@ -95,8 +95,7 @@ export default function HomeScreen() {
             style={styles.createQuizBtn}
             onPress={() => {
               playButtonSound(); // Phát âm thanh khi nhấn
-              // router.push('/create-quiz');
-              router.push('../optional-survey');
+              router.push('/create-quiz');
 
             }}
           >
@@ -114,7 +113,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
-    marginTop: 30,
   },
   topBar: {
     flexDirection: 'row',
@@ -251,48 +249,6 @@ const styles = StyleSheet.create({
     height: 48,
     opacity: 0.8,
   },
-  tabBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 64,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  tabItemActive: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  tabIcon: {
-    width: 26,
-    height: 26,
-    marginBottom: 2,
-  },
-  tabText: {
-    fontSize: 12,
-    color: '#bbb',
-    fontWeight: '500',
-  },
-  tabTextActive: {
-    fontSize: 12,
-    color: '#1c58f2',
-    fontWeight: '700',
-  },
   flexGrow: {
     flex: 1,
     justifyContent: 'center',
@@ -306,4 +262,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 32,
   },
-});
+}); 

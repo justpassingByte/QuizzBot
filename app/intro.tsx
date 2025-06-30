@@ -37,9 +37,10 @@ export default function IntroScreen() {
 
   const handleNext = () => {
     if (current === 0) {
-      flatListRef.current?.scrollToIndex({ index: 1 });
+      flatListRef.current?.scrollToIndex({ index: 1, animated: true });
+      setCurrent(1);
     } else if (current === 2) {
-      router.push('/signup');
+      router.push('/optional-survey');
     }
   };
 
@@ -48,7 +49,7 @@ export default function IntroScreen() {
   };
 
   const handleSignInOrSignUp = () => {
-    flatListRef.current?.scrollToIndex({ index: 2 });
+    flatListRef.current?.scrollToIndex({ index: 2, animated: true });
     setCurrent(2);
   };
 
@@ -63,18 +64,21 @@ export default function IntroScreen() {
         data={slides}
         horizontal
         pagingEnabled
-        scrollEnabled={false}
+        scrollEnabled={true}
         showsHorizontalScrollIndicator={false}
         extraData={current}
+        getItemLayout={(data, index) => (
+          { length: width, offset: width * index, index }
+        )}
         renderItem={({ item, index }) => (
           <View style={styles.slide}>
             {(index === 1 || index === 2) && (
               <TouchableOpacity style={{ position: 'absolute', top: 40, left: 24, zIndex: 10 }} onPress={() => {
                 if (index === 1) {
-                  flatListRef.current?.scrollToIndex({ index: 0 });
+                  flatListRef.current?.scrollToIndex({ index: 0, animated: true });
                   setCurrent(0);
                 } else if (index === 2) {
-                  flatListRef.current?.scrollToIndex({ index: 1 });
+                  flatListRef.current?.scrollToIndex({ index: 1, animated: true });
                   setCurrent(1);
                 }
               }}>

@@ -3,8 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { JSX, useState } from 'react';
 import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import useButtonSound from './components/useButtonSound';
-import { useMusic } from './context/MusicContext';
+import useButtonSound from '../components/useButtonSound';
+import { useMusic } from '../context/MusicContext';
 
 export default function LeaderboardScreen() {
   const router = useRouter();
@@ -187,44 +187,6 @@ const renderTopThreeItem = (user: TopThreeUser, index: number): JSX.Element => {
             ))}
           </View>
         </ScrollView>
-
-        {/* Tab Bar */}
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => {
-              if (soundEffectsEnabled) playButtonSound();
-              router.push('/');
-            }}
-          >
-            <Ionicons name="home" size={24} color="#bbb" />
-            <Text style={styles.tabBarText}>Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => {
-              if (soundEffectsEnabled) playButtonSound();
-              router.push('../profile');
-            }}
-          >
-            <Ionicons name="person" size={24} color="#bbb" />
-            <Text style={styles.tabBarText}>Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItemActive}>
-            <Ionicons name="trophy" size={24} color="#1c58f2" />
-            <Text style={styles.tabBarTextActive}>Leaderboard</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => {
-              if (soundEffectsEnabled) playButtonSound();
-              router.push('../settings');
-            }}
-          >
-            <Ionicons name="grid" size={24} color="#bbb" />
-            <Text style={styles.tabBarText}>More</Text>
-          </TouchableOpacity>
-        </View>
       </SafeAreaView>
     </LinearGradient>
   );

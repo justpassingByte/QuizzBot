@@ -31,9 +31,22 @@ export default function RootLayout() {
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
-            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="loading-quiz" />
             <Stack.Screen name="+not-found" />
+            <Stack.Screen name="create-quiz" />
+            <Stack.Screen name="edit-profile" />
+            <Stack.Screen name="forgot-password" />
+            <Stack.Screen name="intro" />
+            <Stack.Screen name="music-effect" />
+            <Stack.Screen name="optional-survey" />
+            <Stack.Screen name="quiz-correct" />
+            <Stack.Screen name="quiz-incorrect" />
+            <Stack.Screen name="quiz-result" />
+            <Stack.Screen name="quiz" />
+            <Stack.Screen name="signin" />
+            <Stack.Screen name="signup" />
+            <Stack.Screen name="arcade" />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

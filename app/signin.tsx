@@ -26,9 +26,12 @@ export default function SignInScreen() {
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
-      Alert.alert('Đăng nhập thành công!', JSON.stringify(res.data));
-      // router.replace('/(tabs)'); // Bỏ comment nếu muốn chuyển vào home sau đăng nhập
+      const loginUrl = `${API_URL}/api/auth/login`;
+      console.log('Sending login request to:', loginUrl);
+      const res = await axios.post(loginUrl, { email, password });
+      console.log('Logged in user data:', res.data);
+      router.replace('/(tabs)');
+      console.log('Attempting to navigate to /(tabs)');
     } catch (err: any) {
       Alert.alert('Đăng nhập thất bại', err?.response?.data?.message || 'Lỗi không xác định');
     } finally {
