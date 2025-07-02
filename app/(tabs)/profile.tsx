@@ -1,22 +1,57 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import useButtonSound from '../components/useButtonSound';
 import { useMusic } from '../context/MusicContext';
+import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../../constants/api';
+
+// Định nghĩa kiểu cho dữ liệu thống kê
+interface UserStatistics {
+  totalQuizzesCompleted: number;
+  averageScore: number;
+  quizzesCompletedOverTime: Array<{ date: string; count: number }>;
+  // Thêm các trường khác nếu cần
+}
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
+  const { user } = useAuth();
+  const [statistics, setStatistics] = useState<UserStatistics | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      if (!user?.id) return;
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/api/users/${user.id}/statistics`);
+        if (response.ok) {
+          const data = await response.json();
+          setStatistics(data);
+        } else {
+          console.error("Failed to fetch statistics");
+        }
+      } catch (error) {
+        console.error("Error fetching statistics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStatistics();
+  }, [user]);
 
   const chartData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: statistics?.quizzesCompletedOverTime.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })) || [],
     datasets: [
       {
-        data: [20, 45, 28, 80, 99, 43, 50],
+        data: statistics?.quizzesCompletedOverTime.map(d => d.count) || [],
         color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
         strokeWidth: 3,
       },
@@ -24,12 +59,10 @@ export default function ProfileScreen() {
   };
 
   const achievements = [
-    { icon: 'trophy', count: 85, label: 'Quizzes', color: '#ffd700' },
-    { icon: 'star', count: 245679, label: 'Lifetime Point', color: '#ffd700' },
-    { icon: 'flame', count: 124, label: 'Quiz Passed', color: '#ff6b35' },
-    { icon: 'medal', count: 38, label: 'Top 3 Positions', color: '#ffd700' },
-    { icon: 'target', count: 269, label: 'Challenge Pass...', color: '#ff4757' },
-    { icon: 'zap', count: 72, label: 'Fastest Record', color: '#ff4757' },
+    { icon: 'trophy', count: statistics?.totalQuizzesCompleted ?? 0, label: 'Quizzes', color: '#ffd700' },
+    { icon: 'star', count: user?.score ?? 0, label: 'Lifetime Point', color: '#ffd700' },
+    { icon: 'flame', count: statistics?.totalQuizzesCompleted ?? 0, label: 'Quiz Passed', color: '#ff6b35' },
+    { icon: 'speedometer', count: Number(statistics?.averageScore.toFixed(0) ?? 0), label: 'Avg. Score', color: '#4CAF50' },
   ];
 
   return (
@@ -72,8 +105,8 @@ export default function ProfileScreen() {
                 style={styles.profileImage}
               />
             </View>
-            <Text style={styles.profileName}>John Brown</Text>
-            <Text style={styles.profileUsername}>@johnbrown_12</Text>
+            <Text style={styles.profileName}>{user?.username || 'Guest'}</Text>
+            <Text style={styles.profileUsername}>@{user?.username?.toLowerCase() || 'guest'}</Text>
             
             <TouchableOpacity 
               style={styles.editButton}
@@ -85,74 +118,82 @@ export default function ProfileScreen() {
               <Text style={styles.editButtonText}>Edit Profile</Text>
             </TouchableOpacity>
           </View>
-
-          {/* Stats */}
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>45</Text>
-              <Text style={styles.statLabel}>Quizzes</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>5.6M</Text>
-              <Text style={styles.statLabel}>Plays</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>16.8M</Text>
-              <Text style={styles.statLabel}>Rank</Text>
-            </View>
-          </View>
-
-          {/* Chart */}
-          <View style={styles.chartSection}>
-            <Text style={styles.sectionTitle}>My Statistics</Text>
-            <View style={styles.chartContainer}>
-              <Text style={styles.chartTitle}>Your Point this Week</Text>
-              <Text style={styles.chartPoints}>875 Pt</Text>
-              <LineChart
-                data={chartData}
-                width={Dimensions.get('window').width - 80}
-                height={200}
-                yAxisLabel=""
-                yAxisSuffix=""
-                chartConfig={{
-                  backgroundColor: 'transparent',
-                  backgroundGradientFrom: 'transparent',
-                  backgroundGradientTo: 'transparent',
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                  style: {
-                    borderRadius: 16,
-                  },
-                  propsForDots: {
-                    r: '4',
-                    strokeWidth: '2',
-                    stroke: '#fff',
-                  },
-                }}
-                bezier
-                style={styles.chart}
-              />
-            </View>
-          </View>
-
-          {/* Achievements */}
-          <View style={styles.achievementsSection}>
-            <Text style={styles.sectionTitle}>Your Achievements</Text>
-            <View style={styles.achievementsGrid}>
-              {achievements.map((achievement, index) => (
-                <View key={index} style={styles.achievementCard}>
-                  <Ionicons 
-                    name={achievement.icon as any} 
-                    size={24} 
-                    color={achievement.color} 
-                  />
-                  <Text style={styles.achievementNumber}>{achievement.count}</Text>
-                  <Text style={styles.achievementLabel}>{achievement.label}</Text>
+          
+          {loading ? <ActivityIndicator size="large" color="#fff" /> : (
+            <>
+              {/* Stats */}
+              <View style={styles.statsContainer}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>{statistics?.totalQuizzesCompleted ?? 0}</Text>
+                  <Text style={styles.statLabel}>Quizzes</Text>
                 </View>
-              ))}
-            </View>
-          </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>{user?.score ?? 0}</Text>
+                  <Text style={styles.statLabel}>Points</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>{statistics?.averageScore.toFixed(1) ?? 0}</Text>
+                  <Text style={styles.statLabel}>Avg. Score</Text>
+                </View>
+              </View>
+
+              {/* Chart */}
+              <View style={styles.chartSection}>
+                <Text style={styles.sectionTitle}>My Statistics</Text>
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>Your Activity this Week</Text>
+                  <Text style={styles.chartPoints}>{statistics?.totalQuizzesCompleted ?? 0} Quizzes</Text>
+                  {chartData.labels && chartData.labels.length > 0 ? (
+                    <LineChart
+                      data={chartData}
+                      width={Dimensions.get('window').width - 80}
+                      height={200}
+                      yAxisLabel=""
+                      yAxisSuffix=""
+                      chartConfig={{
+                        backgroundColor: 'transparent',
+                        backgroundGradientFrom: 'transparent',
+                        backgroundGradientTo: 'transparent',
+                        decimalPlaces: 0,
+                        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                        style: {
+                          borderRadius: 16,
+                        },
+                        propsForDots: {
+                          r: '4',
+                          strokeWidth: '2',
+                          stroke: '#fff',
+                        },
+                      }}
+                      bezier
+                      style={styles.chart}
+                    />
+                  ) : (
+                    <Text style={styles.noDataText}>No activity data available.</Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Achievements */}
+              <View style={styles.achievementsSection}>
+                <Text style={styles.sectionTitle}>Your Achievements</Text>
+                <View style={styles.achievementsGrid}>
+                  {achievements.map((achievement, index) => (
+                    <View key={index} style={styles.achievementCard}>
+                      <Ionicons 
+                        name={achievement.icon as any} 
+                        size={24} 
+                        color={achievement.color} 
+                      />
+                      <Text style={styles.achievementNumber}>{achievement.count}</Text>
+                      <Text style={styles.achievementLabel}>{achievement.label}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -322,5 +363,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
+  },
+  noDataText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

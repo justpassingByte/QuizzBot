@@ -71,7 +71,7 @@ export async function getQuestionById(quizId: string) {
     if (quiz && quiz.quiz && Array.isArray(quiz.quiz.questions)) {
       return quiz.quiz.questions.map((q: any) => ({
         question: q.text,
-        answers: q.choices.map((c: any) => ({ text: c.text, correct: !!c.isCorrect })),
+        answers: q.choices.map((c: any) => ({ id: c.id, text: c.text, correct: !!c.isCorrect })),
         explanation: q.explanation,
         id: q.id,
       }));

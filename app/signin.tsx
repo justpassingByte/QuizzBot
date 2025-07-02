@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { API_URL } from '../constants/api';
+import { useAuth } from './context/AuthContext';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -22,6 +23,7 @@ export default function SignInScreen() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { signIn } = useAuth();
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -29,11 +31,18 @@ export default function SignInScreen() {
       const loginUrl = `${API_URL}/api/auth/login`;
       console.log('Sending login request to:', loginUrl);
       const res = await axios.post(loginUrl, { email, password });
-      console.log('Logged in user data:', res.data);
+      
+      // Lấy dữ liệu user từ response
+      const userData = res.data;
+      
+      // Gọi hàm signIn từ context để lưu user
+      await signIn(userData);
+
+      console.log('Logged in user data:', userData);
       router.replace('/(tabs)');
       console.log('Attempting to navigate to /(tabs)');
     } catch (err: any) {
-      Alert.alert('Đăng nhập thất bại', err?.response?.data?.message || 'Lỗi không xác định');
+      Alert.alert('Đăng nhập thất bại', err?.response?.data?.error || 'Lỗi không xác định');
     } finally {
       setLoading(false);
     }

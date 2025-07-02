@@ -1,85 +1,153 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, SafeAreaView, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AnswerButton from './components/AnswerButton';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { Ionicons } from '@expo/vector-icons';
+import { API_URL } from '../constants/api';
+import { useAuth } from './context/AuthContext';
 
 const { width } = Dimensions.get('window');
 const robotImg = require('../assets/images/robot2.png');
 
 export default function QuizScreen() {
   const router = useRouter();
-  const { topic, questions: questionsParam, current: initialCurrent, score: initialScore } = useLocalSearchParams();
-  const questions = questionsParam ? JSON.parse(questionsParam as string) : [];
-  const [current, setCurrent] = useState(Number(initialCurrent || 0));
-  const [score, setScore] = useState(Number(initialScore || 0));
+  const params = useLocalSearchParams();
+  const { 
+    quizId: paramQuizId, 
+    topic, 
+    questions: questionsParam, 
+    current: initialCurrent, 
+    score: initialScore, 
+    answers: answersParam 
+  } = params;
+  
+  const { user, updateUser } = useAuth();
+
+  // --- State Management ---
+  const [quizId] = useState(paramQuizId); 
+  const current = Number(initialCurrent || 0);
+  const score = Number(initialScore || 0);
+
+  const questions = useMemo(() => {
+    if (!questionsParam) return [];
+    const param = Array.isArray(questionsParam) ? questionsParam[0] : questionsParam;
+    try { return JSON.parse(param); } catch { return []; }
+  }, [questionsParam]);
+
+  const initialAnswers = useMemo(() => {
+    if (!answersParam) return [];
+    const param = Array.isArray(answersParam) ? answersParam[0] : answersParam;
+    try { return JSON.parse(param); } catch { return []; }
+  }, [answersParam]);
+  const [answers, setAnswers] = useState(initialAnswers);
+  
   const [selected, setSelected] = useState<number | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const totalTime = 10;
-  const [timer, setTimer] = React.useState(totalTime);
+  const [timer, setTimer] = useState(10);
 
-  React.useEffect(() => {
-    if (selected !== null) return;
-    if (timer === 0) {
-      if (current < questions.length - 1) {
-        setSelected(null);
-        setCurrent((c) => c + 1);
-        setTimer(totalTime);
-      } else {
-        setShowResult(true);
-        router.replace({ pathname: '/quiz-result', params: { score: String(score), total: String(questions.length), topic } });
-      }
-      return;
+  // --- Core Functions ---
+  const submitQuiz = async (finalAnswers: any[]) => {
+    if (!user) {
+      Alert.alert("Lỗi", "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
+      return router.replace('/signin');
     }
-    const t = setTimeout(() => setTimer(timer - 1), 1000);
-    return () => clearTimeout(t);
-  }, [timer, selected]);
+    
+    const payload = { 
+      quizId, 
+      userId: user.id, 
+      answers: finalAnswers 
+    };
 
-  // Sau khi chọn đáp án, tự động chuyển câu sau 5 giây
-  React.useEffect(() => {
-    if (selected === null) return;
-    const timeout = setTimeout(() => {
-      if (current < questions.length - 1) {
-        setSelected(null);
-        setCurrent((c) => c + 1);
-        setTimer(totalTime);
-      } else {
-        setShowResult(true);
+    console.log('--- SUBMITTING QUIZ PAYLOAD ---');
+    console.log(JSON.stringify(payload, null, 2));
+    console.log('-----------------------------');
+
+    try {
+      const response = await fetch(`${API_URL}/api/quizzes/submit-result`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error: ${errorText}`);
       }
-    }, 5000);
-    return () => clearTimeout(timeout);
-  }, [selected]);
 
-  if (!questions.length) {
-    return <View style={styles.root}><Text style={styles.error}>No questions found.</Text></View>;
-  }
+      const resultData = await response.json();
 
-  const q = questions[current];
-  const correctIdx = q.answers.findIndex((a: any) => a.correct);
+      // Cập nhật điểm từ newTotalScore của backend
+      if (updateUser && resultData.newTotalScore !== undefined) {
+        updateUser({ score: resultData.newTotalScore });
+      }
+
+      router.replace({
+        pathname: '/quiz-result',
+        params: { ...resultData, suggestedTopics: JSON.stringify(resultData.suggestedTopics || []) },
+      });
+    } catch (error) {
+      console.error("Error submitting quiz:", error);
+      Alert.alert("Lỗi", "Không thể nộp bài. Vui lòng thử lại.");
+    }
+  };
+
+  const navigateToResultScreen = (isCorrect: boolean, newAnswers: any[], nextScore: number, selectedIndex: number) => {
+    const isLastQuestion = current === questions.length - 1;
+
+    if (isLastQuestion) {
+      submitQuiz(newAnswers);
+    } else {
+      const screen = isCorrect ? '/quiz-correct' : '/quiz-incorrect';
+      router.push({
+        pathname: screen,
+        params: {
+          explanation: q.explanation,
+          current: String(current),
+          total: String(questions.length),
+          score: String(nextScore),
+          topic,
+          questions: questionsParam,
+          quizId,
+          answers: JSON.stringify(newAnswers),
+          selected: String(selectedIndex),
+        }
+      });
+    }
+  };
 
   const handleSelect = (idx: number) => {
+    if (selected !== null) return;
+    
+    const isCorrect = q.answers[idx].correct;
     setSelected(idx);
-    if (q.answers[idx].correct) {
-      setScore((s) => s + 1);
-      router.push({ pathname: '/quiz-correct', params: { explanation: q.explanation, current: String(current), total: String(questions.length), score: String(score + 1), topic, questions: questionsParam } });
-    } else {
-      router.push({ pathname: '/quiz-incorrect', params: { explanation: q.explanation, current: String(current), total: String(questions.length), score: String(score), topic, questions: questionsParam } });
-    }
+    
+    const newAnswers = [...answers, {
+      questionId: q.id,
+      userAnswer: q.answers[idx].id,
+    }];
+    setAnswers(newAnswers);
+    
+    const nextScore = isCorrect ? score + 1 : score;
+    setTimeout(() => navigateToResultScreen(isCorrect, newAnswers, nextScore, idx), 1200);
   };
 
-  const handleNext = () => {
-    setSelected(null);
-    if (current < questions.length - 1) {
-      setCurrent((c) => c + 1);
-    } else {
-      setShowResult(true);
-      router.replace({ pathname: '/quiz-result', params: { score: String(score), total: String(questions.length), topic } });
-    }
-  };
+  useEffect(() => {
+    if (selected !== null || !questions.length) return;
+    const timerId = setTimeout(() => {
+      if (timer > 0) {
+        setTimer(timer - 1);
+      } else {
+        const newAnswers = [...answers, { questionId: q.id, userAnswer: null }];
+        setAnswers(newAnswers);
+        navigateToResultScreen(false, newAnswers, score, -1);
+      }
+    }, 1000);
+    return () => clearTimeout(timerId);
+  }, [timer, selected, questions]);
 
-  if (showResult) {
-    return <View style={styles.root}><Text style={styles.result}>Quiz Finished! Score: {score}/{questions.length}</Text></View>;
+  const q = questions[current];
+  if (!q) {
+    return <View style={styles.root}><Text>Loading question...</Text></View>
   }
 
   return (
@@ -92,7 +160,7 @@ export default function QuizScreen() {
           <AnimatedCircularProgress
             size={44}
             width={5}
-            fill={(timer / totalTime) * 100}
+                fill={(timer / 10) * 100}
             tintColor="#1976d2"
             backgroundColor="#e0e0e0"
             rotation={0}
@@ -102,7 +170,7 @@ export default function QuizScreen() {
           </AnimatedCircularProgress>
         </View>
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
-          <TouchableOpacity style={styles.quizCloseBtn} onPress={() => router.replace('/') }>
+            <TouchableOpacity style={styles.quizCloseBtn} onPress={() => router.replace('/(tabs)') }>
             <Ionicons name="close" size={28} color="#222" />
           </TouchableOpacity>
         </View>
@@ -123,18 +191,15 @@ export default function QuizScreen() {
             else if (idx === 1) color = 'red';
             else if (idx === 2) color = 'orange';
             else if (idx === 3) color = 'green';
-            let showIcon = false;
-            let iconType: 'check' | 'close' | undefined = undefined;
+                
             let variant: 'default' | 'correct' | 'wrong' | 'faded' | 'warning' = 'default';
             if (selected !== null) {
               if (ans.correct) {
                 variant = 'correct';
-                showIcon = true;
-                iconType = 'check';
               } else if (idx === selected && !ans.correct) {
                 variant = 'wrong';
-                showIcon = true;
-                iconType = 'close';
+                } else {
+                    variant = 'faded';
               }
             }
             return (
@@ -145,8 +210,8 @@ export default function QuizScreen() {
                 variant={variant}
                 onPress={() => handleSelect(idx)}
                 disabled={selected !== null}
-                showIcon={showIcon}
-                iconType={iconType}
+                    showIcon={variant === 'correct' || variant === 'wrong'}
+                    iconType={variant === 'correct' ? 'check' : 'close'}
               />
             );
           })}
@@ -156,6 +221,7 @@ export default function QuizScreen() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   root: {
     flex: 1,
@@ -163,137 +229,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 0,
-  },
-  topBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: width,
-    height: 44,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    paddingLeft: 23,
-    paddingTop: 11,
-    zIndex: 2,
-  },
-  timeText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
-  topic: {
-    marginTop: 60,
-    fontSize: 20,
-    color: '#1c58f2',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  progress: {
-    fontSize: 16,
-    color: '#888',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  questionText: {
-    fontSize: 28,
-    color: '#222',
-    textAlign: 'center',
-    marginHorizontal: 16,
-    fontWeight: 'bold',
-    lineHeight: 38,
-  },
-  questionBox: {
-    minHeight: 80,
-    maxHeight: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  answersWrap: {
-    width: 382,
-    height: 340,
-    position: 'relative',
-    marginBottom: 24,
-  },
-  answerBox: {
-    position: 'absolute',
-    left: 0,
-    width: 382,
-    height: 59,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    zIndex: 2,
-  },
-  answerDefault: {
-    backgroundColor: '#285ecc',
-  },
-  answerGreen: {
-    backgroundColor: '#00b676',
-  },
-  answerRed: {
-    backgroundColor: '#f75555',
-  },
-  answerText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    zIndex: 2,
-  },
-  explanationBox: {
-    marginTop: 24,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 16,
-    padding: 20,
-    width: 340,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  explanationTitleCorrect: {
-    color: '#00b676',
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  explanationTitleIncorrect: {
-    color: '#f75555',
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  explanationText: {
-    color: '#222',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  nextBtn: {
-    backgroundColor: '#1c58f2',
-    borderRadius: 30,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    alignItems: 'center',
-  },
-  nextBtnText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  error: {
-    marginTop: 100,
-    color: 'red',
-    fontSize: 18,
-  },
-  result: {
-    marginTop: 100,
-    color: '#1c58f2',
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   quizTopBar: {
     flexDirection: 'row',
@@ -328,5 +263,26 @@ const styles = StyleSheet.create({
   robot: {
     width: 100,
     height: 100,
+  },
+  questionBox: {
+    minHeight: 80,
+    maxHeight: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  questionText: {
+    fontSize: 28,
+    color: '#222',
+    textAlign: 'center',
+    marginHorizontal: 16,
+    fontWeight: 'bold',
+    lineHeight: 38,
+  },
+  answersWrap: {
+    width: 382,
+    height: 340,
+    position: 'relative',
+    marginBottom: 24,
   },
 }); 

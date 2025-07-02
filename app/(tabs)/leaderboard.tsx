@@ -1,103 +1,65 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import React, { JSX, useState } from 'react';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useState, useCallback } from 'react';
+import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import useButtonSound from '../components/useButtonSound';
 import { useMusic } from '../context/MusicContext';
+import { API_URL } from '../../constants/api';
+import { useAuth } from '../context/AuthContext';
+
+interface User {
+  id: string;
+  username: string;
+  score: number;
+  avatar?: string;
+  position?: number;
+  isCurrentUser?: boolean;
+}
 
 export default function LeaderboardScreen() {
   const router = useRouter();
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   const [activeTab, setActiveTab] = useState('Global');
+  const [leaderboard, setLeaderboard] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user: currentUser } = useAuth();
 
-  const topThree = [
-    {
-      id: 2,
-      name: 'Jackson',
-      score: 1847,
-      username: '@username',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      position: 2,
-    },
-    {
-      id: 1,
-      name: 'Eiden',
-      score: 2430,
-      username: '@username',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-      position: 1,
-    },
-    {
-      id: 3,
-      name: 'Emma Aria',
-      score: 1674,
-      username: '@username',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b123?w=100&h=100&fit=crop&crop=face',
-      position: 3,
-    },
-  ];
+  useFocusEffect(
+    useCallback(() => {
+      const fetchLeaderboard = async () => {
+        setLoading(true);
+        try {
+          const response = await fetch(`${API_URL}/api/leaderboard?limit=10`);
+          const data = await response.json();
+          
+          const formattedData = data.map((user: User, index: number) => ({
+            ...user,
+            position: index + 1,
+            isCurrentUser: user.id === currentUser?.id,
+          }));
+          setLeaderboard(formattedData);
+        } catch (error) {
+          console.error("Failed to fetch leaderboard", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-  const otherUsers = [
-    {
-      id: 4,
-      name: 'Marsha Fisher',
-      score: 36,
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-    },
-    {
-      id: 5,
-      name: 'Juanita Cormier',
-      score: 35,
-      avatar: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=100&h=100&fit=crop&crop=face',
-    },
-    {
-      id: 6,
-      name: 'You',
-      score: 34,
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      isCurrentUser: true,
-    },
-    {
-      id: 7,
-      name: 'Tamara Schmidt',
-      score: 33,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
-    },
-    {
-      id: 8,
-      name: 'Ricardo Veum',
-      score: 32,
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
-    },
-    {
-      id: 9,
-      name: 'Gary Sanford',
-      score: 31,
-      avatar: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop&crop=face',
-    },
-  ];
+      fetchLeaderboard();
+    }, [currentUser])
+  );
 
-interface TopThreeUser {
-    id: number;
-    name: string;
-    score: number;
-    username: string;
-    avatar: string;
-    position: number;
-}
+  const topThree = leaderboard.slice(0, 3);
+  const otherUsers = leaderboard.slice(3);
 
-interface RenderTopThreeItemProps {
-    user: TopThreeUser;
-    index: number;
-}
-
-const renderTopThreeItem = (user: TopThreeUser, index: number): JSX.Element => {
+  const renderTopThreeItem = (user: User) => {
     const isCenter = user.position === 1;
     const containerStyle = isCenter ? styles.centerPodium : styles.sidePodium;
     const imageSize = isCenter ? 80 : 60;
     const crownColor = user.position === 1 ? '#ffd700' : user.position === 2 ? '#c0c0c0' : '#cd7f32';
+    const avatarUrl = user.avatar || `https://api.dicebear.com/8.x/initials/png?seed=${user.username}`;
     
     return (
         <View key={user.id} style={[styles.podiumItem, containerStyle]}>
@@ -107,14 +69,14 @@ const renderTopThreeItem = (user: TopThreeUser, index: number): JSX.Element => {
                 </View>
             )}
             <View style={[styles.avatarContainer, { width: imageSize, height: imageSize }]}>
-                <Image source={{ uri: user.avatar }} style={styles.avatar} />
+                <Image source={{ uri: avatarUrl }} style={styles.avatar} />
                 <View style={[styles.positionBadge, { backgroundColor: crownColor }]}>
                     <Text style={styles.positionText}>{user.position}</Text>
                 </View>
             </View>
-            <Text style={styles.podiumName}>{user.name}</Text>
+            <Text style={styles.podiumName}>{user.username}</Text>
             <Text style={styles.podiumScore}>{user.score}</Text>
-            <Text style={styles.podiumUsername}>{user.username}</Text>
+            <Text style={styles.podiumUsername}>@{user.username.toLowerCase()}</Text>
         </View>
     );
 };
@@ -126,7 +88,7 @@ const renderTopThreeItem = (user: TopThreeUser, index: number): JSX.Element => {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Leaderboard</Text>
           <View style={styles.pointsBadge}>
-            <Text style={styles.pointsText}>301</Text>
+            <Text style={styles.pointsText}>{currentUser?.score ?? 0}</Text>
             <Ionicons name="star" size={16} color="#ffd700" />
           </View>
         </View>
@@ -158,34 +120,40 @@ const renderTopThreeItem = (user: TopThreeUser, index: number): JSX.Element => {
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Top 3 Podium */}
-          <View style={styles.podiumContainer}>
-            <View style={styles.podiumRow}>
-              {topThree.map((user, index) => renderTopThreeItem(user, index))}
-            </View>
-          </View>
-
-          {/* Other Rankings */}
-          <View style={styles.rankingContainer}>
-            {otherUsers.map((user, index) => (
-              <View
-                key={user.id}
-                style={[
-                  styles.rankingItem,
-                  user.isCurrentUser && styles.currentUserItem,
-                ]}
-              >
-                <Text style={styles.rankNumber}>{index + 4}</Text>
-                <Image source={{ uri: user.avatar }} style={styles.rankingAvatar} />
-                <Text style={[styles.rankingName, user.isCurrentUser && styles.currentUserName]}>
-                  {user.name}
-                </Text>
-                <Text style={[styles.rankingScore, user.isCurrentUser && styles.currentUserScore]}>
-                  {user.score} pts
-                </Text>
+          {loading ? (
+            <ActivityIndicator size="large" color="#fff" style={{ marginTop: 50 }} />
+          ) : (
+            <>
+              {/* Top 3 Podium */}
+              <View style={styles.podiumContainer}>
+                <View style={styles.podiumRow}>
+                  {topThree.map((user) => renderTopThreeItem(user))}
+                </View>
               </View>
-            ))}
-          </View>
+
+              {/* Other Rankings */}
+              <View style={styles.rankingContainer}>
+                {otherUsers.map((user, index) => (
+                  <View
+                    key={user.id}
+                    style={[
+                      styles.rankingItem,
+                      user.isCurrentUser && styles.currentUserItem,
+                    ]}
+                  >
+                    <Text style={styles.rankNumber}>{index + 4}</Text>
+                    <Image source={{ uri: user.avatar || `https://api.dicebear.com/8.x/initials/png?seed=${user.username}` }} style={styles.rankingAvatar} />
+                    <Text style={[styles.rankingName, user.isCurrentUser && styles.currentUserName]}>
+                      {user.username}
+                    </Text>
+                    <Text style={[styles.rankingScore, user.isCurrentUser && styles.currentUserScore]}>
+                      {user.score} pts
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
