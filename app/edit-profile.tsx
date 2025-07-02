@@ -15,16 +15,18 @@ import {
 } from 'react-native';
 import useButtonSound from './components/useButtonSound';
 import { useMusic } from './context/MusicContext';
+import { useAuth } from './context/AuthContext';
 
 export default function EditProfileScreen() {
   const router = useRouter();
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
+  const { user } = useAuth();
 
-  const [userName, setUserName] = useState('John_Brown12');
+  const [userName, setUserName] = useState(user?.username || '');
   const [firstName, setFirstName] = useState('John');
   const [lastName, setLastName] = useState('Brown');
-  const [email, setEmail] = useState('john.brown@bu.edu');
+  const [email, setEmail] = useState(user?.email || '');
   const [dateOfBirth, setDateOfBirth] = useState('12/7/1995');
 
   const handleSave = () => {

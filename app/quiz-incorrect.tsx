@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView, Image, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -10,18 +10,21 @@ const robotImg = require('../assets/images/robot2.png');
 export default function QuizIncorrectScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { explanation, current, total, score, topic, questions: questionsParam } = params;
+  const { explanation, current, total, score, topic, questions: questionsParam, selected, answers } = params;
 
-  // Convert questionsParam back to array if available, otherwise pass empty array
-  const questions = questionsParam ? JSON.parse(questionsParam as string) : [];
-  const currentIdx = Number(current) || 0;
-  const selected = params.selected !== undefined ? Number(params.selected) : undefined;
+  // Sử dụng useMemo để tránh tạo lại mảng questions trên mỗi lần render
+  const questions = useMemo(() => (
+    questionsParam ? JSON.parse(questionsParam as string) : []
+  ), [questionsParam]);
+  
+  const currentIdx = Number(current || 0);
+  const selectedIdx = selected !== undefined ? Number(selected) : -1;
 
-  const isLastQuestion = Number(current) + 1 === Number(total);
-  const nextQuestionIndex = Number(current) + 1;
+  const isLastQuestion = currentIdx + 1 === Number(total);
 
   const handleNext = () => {
     if (isLastQuestion) {
+      // Logic gửi kết quả cuối cùng đã có ở quiz.tsx
       router.replace({ pathname: '/quiz-result', params: { score, total, topic, suggestedTopics: params.suggestedTopics || '[]' } });
     } else {
       router.replace({
@@ -29,10 +32,10 @@ export default function QuizIncorrectScreen() {
         params: {
           topic,
           questions: JSON.stringify(questions),
-          current: String(nextQuestionIndex),
+          current: String(currentIdx + 1), // Chuyển đến câu hỏi tiếp theo
           score,
-          total,
-          selected: undefined,
+          answers, // Truyền lại mảng answers đã được cập nhật
+          quizId: params.quizId, // Thêm quizId vào đây
         }
       });
     }
@@ -67,7 +70,7 @@ export default function QuizIncorrectScreen() {
         <View style={styles.answersWrap}>
           {questions[currentIdx]?.answers.map((ans: any, idx: number) => {
             const isCorrect = ans.correct;
-            const isSelected = idx === selected;
+            const isSelected = idx === selectedIdx;
             let variant: 'default' | 'correct' | 'wrong' | 'faded' | 'warning' = 'faded';
             let showIcon = false;
             let iconType: 'check' | 'close' | undefined = undefined;
@@ -75,7 +78,7 @@ export default function QuizIncorrectScreen() {
               variant = 'correct';
               showIcon = true;
               iconType = 'check';
-            } else if (isSelected) {
+            } else if (isSelected) { // Làm nổi bật đáp án sai đã chọn
               variant = 'wrong';
               showIcon = true;
               iconType = 'close';

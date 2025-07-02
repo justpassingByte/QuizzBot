@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
@@ -9,7 +9,30 @@ const coinImg = require('../assets/images/coin.png');
 
 export default function QuizResultScreen() {
   const params = useLocalSearchParams();
-  const suggestedTopics = params.suggestedTopics ? JSON.parse(params.suggestedTopics as string) : [];
+  const router = useRouter();
+
+  const [score, setScore] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [coinsEarned, setCoinsEarned] = useState(0);
+  const [xpEarned, setXpEarned] = useState(0);
+  const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (params.score) setScore(Number(params.score));
+    if (params.correctAnswers) setCorrectAnswers(Number(params.correctAnswers));
+    if (params.totalQuestions) setTotalQuestions(Number(params.totalQuestions));
+    if (params.coinsEarned) setCoinsEarned(Number(params.coinsEarned));
+    if (params.xpEarned) setXpEarned(Number(params.xpEarned));
+    if (params.suggestedTopics) {
+      try {
+        setSuggestedTopics(JSON.parse(params.suggestedTopics as string));
+      } catch (e) {
+        console.error("Failed to parse suggested topics", e);
+      }
+    }
+  }, [params]);
+
   return (
     <SafeAreaView style={styles.root}>
       <View style={{flex: 2, alignItems: 'center', justifyContent: 'flex-start'}}>
@@ -20,28 +43,28 @@ export default function QuizResultScreen() {
           <View style={styles.achievementBox}>
             <Image source={coinImg} style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
-              <Text style={styles.achievementValue}>245,679</Text>
+              <Text style={styles.achievementValue}>{coinsEarned}</Text>
               <Text style={styles.achievementLabel}>Coins Earned</Text>
             </View>
           </View>
           <View style={styles.achievementBox}>
             <Ionicons name="flash" size={32} color="#ffcc4d" style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
-              <Text style={styles.achievementValue}>124</Text>
+              <Text style={styles.achievementValue}>{xpEarned}</Text>
               <Text style={styles.achievementLabel}>XP</Text>
             </View>
           </View>
           <View style={styles.achievementBox}>
             <Ionicons name="time" size={32} color="#285ecc" style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
-              <Text style={styles.achievementValue}>72</Text>
-              <Text style={styles.achievementLabel}>Avg time</Text>
+              <Text style={styles.achievementValue}>{totalQuestions}</Text>
+              <Text style={styles.achievementLabel}>Total Questions</Text>
             </View>
           </View>
           <View style={styles.achievementBox}>
             <Ionicons name="checkmark-circle" size={32} color="#00b676" style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
-              <Text style={styles.achievementValue}>38</Text>
+              <Text style={styles.achievementValue}>{correctAnswers}</Text>
               <Text style={styles.achievementLabel}>Correct Questions</Text>
             </View>
           </View>
@@ -53,17 +76,19 @@ export default function QuizResultScreen() {
           <View style={{ marginTop: 16, width: 340 }}>
             <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Related Topics:</Text>
             {suggestedTopics.map((topic: string, idx: number) => (
-              <Text key={idx} style={{ color: '#1c58f2', marginTop: 4 }}>{topic}</Text>
+              <TouchableOpacity key={idx} onPress={() => router.push('/loading-quiz')}>
+                <Text style={{ color: '#1c58f2', marginTop: 4 }}>{topic}</Text>
+              </TouchableOpacity>
             ))}
           </View>
         )}
         {/* Retry Button */}
-        <TouchableOpacity style={styles.retryBtn}>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => router.back()}>
           <Text style={styles.retryText}>↻  Retry</Text>
         </TouchableOpacity>
         {/* Share & Home Buttons */}
         <View style={styles.bottomRow}>
-          <TouchableOpacity style={styles.bottomBtn}>
+          <TouchableOpacity style={styles.bottomBtn} onPress={() => router.push('/(tabs)')}>
             <Text style={styles.bottomBtnText}>🏠  Home</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.bottomBtn}>

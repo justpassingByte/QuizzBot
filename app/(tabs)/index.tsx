@@ -5,13 +5,14 @@ import React from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import useButtonSound from '../components/useButtonSound';
 import { useMusic } from '../context/MusicContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
-  const avatarUri = null;
-  const defaultAvatar = require('../../assets/images/avatar-default.png');
+  const { user } = useAuth();
+  const avatarUrl = user?.id ? `https://api.dicebear.com/8.x/initials/png?seed=${user.username}` : require('../../assets/images/avatar-default.png');
 
   return (
     <LinearGradient colors={['#0a4cff', '#1c58f2']} style={styles.gradient}>
@@ -21,26 +22,26 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => {
                 playButtonSound(); 
-                router.push('/profile');
+                router.push('/(tabs)/profile');
               }}
             >
               <Image
-                source={avatarUri ? { uri: avatarUri } : defaultAvatar}
+                source={typeof avatarUrl === 'string' ? { uri: avatarUrl } : avatarUrl}
                 style={styles.avatar}
               />
             </TouchableOpacity>
-            <Text style={styles.profileName}>John Brown</Text>
+            <Text style={styles.profileName}>{user?.username || 'Guest'}</Text>
           </View>
           <View style={styles.topRight}>
             <View style={styles.coinBox}>
-              <Text style={styles.coinText}>301</Text>
+              <Text style={styles.coinText}>{user?.score ?? 0}</Text>
               <Image source={require('../../assets/images/coin.png')} style={styles.coinIcon} />
             </View>
 
            <TouchableOpacity
               onPress={() => {
                 playButtonSound(); 
-                router.push('../leaderboard');
+                router.push('/(tabs)/leaderboard');
               }}
             >
               <Image source={require('../../assets/images/medal.png')} style={styles.medalIcon} />
@@ -49,7 +50,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => {
                 playButtonSound(); 
-                router.push('../setting');
+                router.push('/(tabs)/setting');
               }}
             >
                <Ionicons

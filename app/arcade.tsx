@@ -24,7 +24,7 @@ export default function ArcadeScreen() {
     setSelecting(true);
     const questions = await getQuestionById(quiz.id);
     setSelecting(false);
-    router.push({ pathname: '../quiz', params: { topic: quiz.topic, questions: JSON.stringify(questions) } });
+    router.push({ pathname: '../quiz', params: { quizId: quiz.id, topic: quiz.topic, questions: JSON.stringify(questions) } });
   };
 
   // Màu gradient cho từng category
