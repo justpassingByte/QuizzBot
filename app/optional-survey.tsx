@@ -11,6 +11,9 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import useButtonSound from './components/useButtonSound';
+import { useMusic } from './context/MusicContext';
+
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +31,8 @@ const OptionalSurveyScreens = () => {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedTopics, setSelectedTopics] = useState<Topic[]>([]);
   const router = useRouter();
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
 
   const accountTypes: AccountType[] = [
     { id: 'personal', label: 'Cá nhân', icon: 'person', color: '#3b82f6' },
@@ -45,14 +50,12 @@ const OptionalSurveyScreens = () => {
   ];
 
   const handleAccountSelect = (accountId: string): void => {
+    playButtonSound();
     setSelectedAccount(accountId);
   };
 
-  interface HandleTopicToggle {
-    (topic: Topic): void;
-  }
-
-  const handleTopicToggle: HandleTopicToggle = (topic) => {
+  const handleTopicToggle = (topic: Topic) => {
+    playButtonSound();
     setSelectedTopics((prev: Topic[]) => 
       prev.includes(topic) 
         ? prev.filter((t: Topic) => t !== topic)
@@ -61,14 +64,14 @@ const OptionalSurveyScreens = () => {
   };
 
   const handleBack = () => {
+    playButtonSound();
     if (currentScreen === 2) {
       setCurrentScreen(1);
     }
   };
 
-  // Header component with consistent layout
   const Header = ({ progress, buttonText, onButtonPress, disabled, showBack = false }: {
-    progress: number; // progress as a number (e.g., 33 for 33%)
+    progress: number;
     buttonText: string;
     onButtonPress: () => void;
     disabled: boolean;
@@ -77,7 +80,10 @@ const OptionalSurveyScreens = () => {
     <View style={styles.header}>
       <View style={styles.headerContent}>
         {showBack && (
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <TouchableOpacity onPress={() => {
+            playButtonSound();
+            handleBack();
+          }} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#666" />
           </TouchableOpacity>
         )}
@@ -89,7 +95,10 @@ const OptionalSurveyScreens = () => {
         </View>
 
         <TouchableOpacity
-          onPress={onButtonPress}
+          onPress={() => {
+            playButtonSound();
+            onButtonPress();
+          }}
           style={[styles.nextButton, disabled && styles.disabledButton]}
           disabled={disabled}
         >
@@ -101,7 +110,6 @@ const OptionalSurveyScreens = () => {
     </View>
   );
 
-  // Screen 1: Account Type Selection
   const AccountTypeScreen = () => (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -145,7 +153,6 @@ const OptionalSurveyScreens = () => {
     </SafeAreaView>
   );
 
-  // Screen 2: Topic Selection
   const TopicSelectionScreen = () => (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -154,7 +161,7 @@ const OptionalSurveyScreens = () => {
         progress={66}
         buttonText="HOÀN THÀNH"
         onButtonPress={() => {
-          // Navigate to signup screen with selected data
+          playButtonSound();
           router.push({
             pathname: '/signup',
             params: { selectedAccount, selectedTopics: JSON.stringify(selectedTopics) },
@@ -202,10 +209,12 @@ const OptionalSurveyScreens = () => {
     <>
       {currentScreen === 1 ? <AccountTypeScreen /> : <TopicSelectionScreen />}
       
-      {/* Demo Navigation */}
       <View style={styles.demoNav}>
         <TouchableOpacity
-          onPress={() => setCurrentScreen(1)}
+          onPress={() => {
+            playButtonSound();
+            setCurrentScreen(1);
+          }}
           style={[styles.demoButton, currentScreen === 1 && styles.activeDemoButton]}
         >
           <Text style={[styles.demoButtonText, currentScreen === 1 && styles.activeDemoButtonText]}>
@@ -213,7 +222,10 @@ const OptionalSurveyScreens = () => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setCurrentScreen(2)}
+          onPress={() => {
+            playButtonSound();
+            setCurrentScreen(2);
+          }}
           style={[styles.demoButton, currentScreen === 2 && styles.activeDemoButton]}
         >
           <Text style={[styles.demoButtonText, currentScreen === 2 && styles.activeDemoButtonText]}>
@@ -345,7 +357,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   topicTag: {
-    width: (width - 50) / 3, // Chia thành 3 cột thay vì 2
+    width: (width - 50) / 3,
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderRadius: 20,
@@ -394,4 +406,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OptionalSurveyScreens; 
+export default OptionalSurveyScreens;

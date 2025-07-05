@@ -17,6 +17,8 @@ import {
   View,
 } from 'react-native';
 import { API_URL } from '../constants/api';
+import useButtonSound from './components/useButtonSound';
+import { useMusic } from './context/MusicContext';
 
 const countries = ['United States', 'Vietnam', 'Japan', 'Other'];
 const genders = ['Male', 'Female', 'Other'];
@@ -47,7 +49,8 @@ export default function SignUpScreen() {
 
   const [accountType, setAccountType] = useState(initialAccountType);
   const [favoriteTopics, setFavoriteTopics] = useState<string[]>(initialFavoriteTopics);
-
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   const handleSignUp = async () => {
     setLoading(true);
     console.log('Sending signup request with:', {
@@ -82,7 +85,7 @@ export default function SignUpScreen() {
   // UI bước 1
   const renderStep1 = () => (
     <ScrollView contentContainerStyle={{flexGrow: 1}} keyboardShouldPersistTaps="handled">
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => {router.back(); playButtonSound();}}>
         <Text style={{fontSize: 28, color: '#222'}}>{'<'}</Text>
       </TouchableOpacity>
       <View style={styles.progressWrap}>
@@ -115,21 +118,21 @@ export default function SignUpScreen() {
           onChangeText={text => { setPassword(text); console.log('password:', text); }}
           secureTextEntry={!showPassword}
         />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{marginLeft:8, marginTop:8}}>
+        <TouchableOpacity onPress={() => {setShowPassword(!showPassword); playButtonSound()}} style={{marginLeft:8, marginTop:8}}>
           <Text style={{fontSize:18, color:'#1c58f2'}}>{showPassword ? '🙈' : '👁️'}</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.rememberRow} onPress={() => setRememberMe(!rememberMe)}>
+      <TouchableOpacity style={styles.rememberRow} onPress={() => {setRememberMe(!rememberMe); playButtonSound()}}>
         <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>{rememberMe && <Text style={{color:'#fff'}}>✓</Text>}</View>
         <Text style={styles.rememberText}>Remember me</Text>
       </TouchableOpacity>
       <View style={styles.orRow}><View style={styles.orLine}/><Text style={styles.orText}>or</Text><View style={styles.orLine}/></View>
       <View style={styles.socialRow}>
-        <TouchableOpacity style={styles.socialBtn}><Image source={require('../assets/images/google.png')} style={styles.socialIcon} /></TouchableOpacity>
-        <TouchableOpacity style={styles.socialBtn}><Image source={require('../assets/images/apple.png')} style={styles.socialIcon} /></TouchableOpacity>
-        <TouchableOpacity style={styles.socialBtn}><Image source={require('../assets/images/facebook.png')} style={styles.socialIcon} /></TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn} onPress={() => playButtonSound()}><Image source={require('../assets/images/google.png')} style={styles.socialIcon} /></TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn} onPress={() => playButtonSound()}><Image source={require('../assets/images/apple.png')} style={styles.socialIcon} /></TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn} onPress={() => playButtonSound()}><Image source={require('../assets/images/facebook.png')} style={styles.socialIcon} /></TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.nextBtn} onPress={() => setStep(2)} disabled={!firstName || !lastName || !email || !password}>
+      <TouchableOpacity style={styles.nextBtn} onPress={() => {setStep(2); playButtonSound()}} disabled={!firstName || !lastName || !email || !password}>
         <Text style={styles.nextText}>Next</Text>
       </TouchableOpacity>
     </ScrollView>

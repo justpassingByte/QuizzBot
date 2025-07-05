@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
-import { fetchQuizzes, getQuestionById } from '../constants/api';
-import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { fetchQuizzes, getQuestionById } from '../constants/api';
+import useButtonSound from './components/useButtonSound';
+import { useMusic } from './context/MusicContext';
 
 const { width } = Dimensions.get('window');
 const robotImg = require('../assets/images/robot2.png');
@@ -12,6 +14,8 @@ export default function ArcadeScreen() {
   const [loading, setLoading] = useState(true);
   const [selecting, setSelecting] = useState(false);
   const router = useRouter();
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
 
   useEffect(() => {
     fetchQuizzes().then((data) => {
@@ -64,7 +68,9 @@ export default function ArcadeScreen() {
             >
               <TouchableOpacity
                 style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-                onPress={() => handleSelectQuiz(quiz)}
+               onPress={() => {
+              playButtonSound();           
+              handleSelectQuiz(quiz);}}
                 disabled={selecting}
                 activeOpacity={0.85}
               >

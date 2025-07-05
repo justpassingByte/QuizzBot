@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, Alert, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import useButtonSound from './components/useButtonSound';
+import { useMusic } from './context/MusicContext';
 
 const { width } = Dimensions.get('window');
 
@@ -36,7 +38,8 @@ export default function CreateQuizScreen() {
   const [level, setLevel] = useState('intermediate');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   // Khi chọn preset, tự động set config
   const handleSelectLevel = (lv: string) => {
     setLevel(lv);
@@ -100,7 +103,7 @@ export default function CreateQuizScreen() {
           <TouchableOpacity
             key={lv}
             style={[styles.levelBtn, level === lv && styles.levelBtnActive]}
-            onPress={() => handleSelectLevel(lv)}
+            onPress={() => { handleSelectLevel(lv); playButtonSound() }}
           >
             <Text style={level === lv ? styles.levelBtnTextActive : styles.levelBtnText}>{lv}</Text>
           </TouchableOpacity>
@@ -129,12 +132,12 @@ export default function CreateQuizScreen() {
         onChangeText={setMaxAttempts}
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-        <TouchableOpacity onPress={() => setIncludeHints((v) => !v)} style={styles.checkbox}>
+        <TouchableOpacity onPress={() => {setIncludeHints((v) => !v); playButtonSound()}} style={styles.checkbox}>
           <View style={[styles.checkboxBox, includeHints && styles.checkboxBoxChecked]} />
         </TouchableOpacity>
         <Text style={{ marginLeft: 8 }}>Include Hints</Text>
       </View>
-      <TouchableOpacity style={styles.createBtn} onPress={handleCreateQuiz} disabled={loading || !topic.trim()}>
+      <TouchableOpacity style={styles.createBtn} onPress={() => {handleCreateQuiz;  playButtonSound()}} disabled={loading || !topic.trim()}>
         <Text style={styles.createBtnText}>{loading ? 'Creating...' : 'Create Quiz'}</Text>
       </TouchableOpacity>
       {loading && <ActivityIndicator size="large" color="#1c58f2" style={{ marginTop: 24 }} />}
