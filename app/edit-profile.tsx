@@ -3,19 +3,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import useButtonSound from './components/useButtonSound';
-import { useMusic } from './context/MusicContext';
 import { useAuth } from './context/AuthContext';
+import { useMusic } from './context/MusicContext';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function EditProfileScreen() {
   const [lastName, setLastName] = useState('Brown');
   const [email, setEmail] = useState(user?.email || '');
   const [dateOfBirth, setDateOfBirth] = useState('12/7/1995');
-
+  
   const handleSave = () => {
     if (soundEffectsEnabled) playButtonSound();
     Alert.alert('Thành công', 'Thông tin đã được cập nhật!', [
@@ -75,7 +75,7 @@ export default function EditProfileScreen() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Profile Image */}
           <View style={styles.profileImageSection}>
-            <TouchableOpacity onPress={handleChangeAvatar} style={styles.profileImageContainer}>
+            <TouchableOpacity onPress={() => {handleChangeAvatar;  playButtonSound()}} style={styles.profileImageContainer}>
               <Image 
                 source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&crop=face' }}
                 style={styles.profileImage}
@@ -146,7 +146,7 @@ export default function EditProfileScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Date of Birth</Text>
-              <TouchableOpacity style={styles.dateInput}>
+              <TouchableOpacity style={styles.dateInput} onPress={() =>  playButtonSound()}>
                 <TextInput
                   style={[styles.input, { flex: 1 }]}
                   value={dateOfBirth}
@@ -162,7 +162,7 @@ export default function EditProfileScreen() {
 
         {/* Save Button */}
         <View style={styles.saveButtonContainer}>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <TouchableOpacity style={styles.saveButton} onPress={() => {handleSave;  playButtonSound()}}>
             <Text style={styles.saveButtonText}>Lưu thay đổi</Text>
           </TouchableOpacity>
         </View>

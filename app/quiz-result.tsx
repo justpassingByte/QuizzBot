@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import useButtonSound from './components/useButtonSound';
+import { useMusic } from './context/MusicContext';
 
 const { width } = Dimensions.get('window');
 const trophyImg = require('../assets/images/tropy.png');
@@ -17,7 +19,8 @@ export default function QuizResultScreen() {
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [xpEarned, setXpEarned] = useState(0);
   const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
-
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   useEffect(() => {
     if (params.score) setScore(Number(params.score));
     if (params.correctAnswers) setCorrectAnswers(Number(params.correctAnswers));
@@ -76,22 +79,22 @@ export default function QuizResultScreen() {
           <View style={{ marginTop: 16, width: 340 }}>
             <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Related Topics:</Text>
             {suggestedTopics.map((topic: string, idx: number) => (
-              <TouchableOpacity key={idx} onPress={() => router.push('/loading-quiz')}>
+              <TouchableOpacity key={idx} onPress={() => {router.push('/loading-quiz'); playButtonSound();}}>
                 <Text style={{ color: '#1c58f2', marginTop: 4 }}>{topic}</Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
         {/* Retry Button */}
-        <TouchableOpacity style={styles.retryBtn} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => {router.back(); playButtonSound();}}>
           <Text style={styles.retryText}>↻  Retry</Text>
         </TouchableOpacity>
         {/* Share & Home Buttons */}
         <View style={styles.bottomRow}>
-          <TouchableOpacity style={styles.bottomBtn} onPress={() => router.push('/(tabs)')}>
+          <TouchableOpacity style={styles.bottomBtn} onPress={() => {router.push('/(tabs)'); playButtonSound();}}>
             <Text style={styles.bottomBtnText}>🏠  Home</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.bottomBtn}>
+          <TouchableOpacity style={styles.bottomBtn} onPress={() => playButtonSound()}>
             <Text style={styles.bottomBtnText}>🔗  Share</Text>
           </TouchableOpacity>
         </View>

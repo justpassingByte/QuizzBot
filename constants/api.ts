@@ -1,5 +1,5 @@
 import axios from 'axios';
-export const API_URL = 'http://192.168.1.5:3000';
+export const API_URL = 'http://192.168.1.6:3000';
 
 // Lấy danh sách quiz từ API thật, fallback mock nếu lỗi
 export async function fetchQuizzes() {

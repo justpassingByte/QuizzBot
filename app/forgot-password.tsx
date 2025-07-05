@@ -1,18 +1,20 @@
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import useButtonSound from './components/useButtonSound';
+import { useMusic } from './context/MusicContext';
 
 export default function ForgotPasswordScreen() {
   const [step, setStep] = useState(1);
@@ -25,8 +27,14 @@ export default function ForgotPasswordScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
-  const otpInputs = [useRef(null), useRef(null), useRef(null), useRef(null)];
-
+  const otpInputs = [
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
+    useRef<TextInput>(null)
+  ];
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   // Đếm ngược resend code
   React.useEffect(() => {
     if (step === 2 && timer > 0) {
@@ -58,7 +66,7 @@ export default function ForgotPasswordScreen() {
   // UI step 1: Nhập email
   const renderStep1 = () => (
     <View style={styles.innerContainer}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => {router.back(); playButtonSound()}}>
         <Text style={{fontSize: 28, color: '#222'}}>{'<'}</Text>
       </TouchableOpacity>
       <Image source={require('../assets/images/robot1.png')} style={styles.robot} />
@@ -74,7 +82,7 @@ export default function ForgotPasswordScreen() {
         onChangeText={setEmail}
         placeholderTextColor="#bbb"
       />
-      <TouchableOpacity style={styles.continueBtn} onPress={handleSendEmail}>
+      <TouchableOpacity style={styles.continueBtn} onPress={() => {handleSendEmail; playButtonSound()}}>
         <Text style={styles.continueText}>CONTINUE</Text>
       </TouchableOpacity>
     </View>
@@ -83,7 +91,7 @@ export default function ForgotPasswordScreen() {
   // UI step 2: Nhập OTP
   const renderStep2 = () => (
     <View style={styles.innerContainer}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => setStep(1)}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => {setStep(1); playButtonSound()}}>
         <Text style={{fontSize: 28, color: '#222'}}>{'<'}</Text>
       </TouchableOpacity>
       <Text style={styles.title}>You've got <Text style={{color:'#1c58f2'}}>mail</Text> <Text>📧</Text></Text>
@@ -109,7 +117,7 @@ export default function ForgotPasswordScreen() {
       </View>
       <Text style={styles.resendText}>Didn't receive email?</Text>
       <Text style={styles.resendText}>You can resend code in <Text style={{color:'#1c58f2'}}>{timer} s</Text></Text>
-      <TouchableOpacity style={styles.continueBtn} onPress={handleConfirmOtp}>
+      <TouchableOpacity style={styles.continueBtn} onPress={() => {handleConfirmOtp; playButtonSound()}}>
         <Text style={styles.continueText}>CONFIRM</Text>
       </TouchableOpacity>
     </View>
@@ -118,7 +126,7 @@ export default function ForgotPasswordScreen() {
   // UI step 3: Tạo mật khẩu mới
   const renderStep3 = () => (
     <View style={styles.innerContainer}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => setStep(2)}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => {setStep(2); playButtonSound()}}>
         <Text style={{fontSize: 28, color: '#222'}}>{'<'}</Text>
       </TouchableOpacity>
       <Text style={styles.title}>Create new <Text style={{color:'#1c58f2'}}>password</Text> <Text>🔐</Text></Text>
@@ -133,7 +141,7 @@ export default function ForgotPasswordScreen() {
           onChangeText={setNewPassword}
           placeholderTextColor="#bbb"
         />
-        <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)} style={styles.eyeBtn}>
+        <TouchableOpacity onPress={() => {setShowNewPassword(!showNewPassword); playButtonSound()}} style={styles.eyeBtn}>
           <Text style={{fontSize:18, color:'#1c58f2'}}>{showNewPassword ? '🙈' : '👁️'}</Text>
         </TouchableOpacity>
       </View>
@@ -147,7 +155,7 @@ export default function ForgotPasswordScreen() {
           onChangeText={setConfirmPassword}
           placeholderTextColor="#bbb"
         />
-        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
+        <TouchableOpacity onPress={() => {setShowConfirmPassword(!showConfirmPassword); playButtonSound()}} style={styles.eyeBtn}>
           <Text style={{fontSize:18, color:'#1c58f2'}}>{showConfirmPassword ? '🙈' : '👁️'}</Text>
         </TouchableOpacity>
       </View>
@@ -155,7 +163,7 @@ export default function ForgotPasswordScreen() {
         <View style={[styles.checkbox, true && styles.checkboxActive]}><Text style={{color:'#fff'}}>✓</Text></View>
         <Text style={styles.rememberText}>Remember me</Text>
       </View>
-      <TouchableOpacity style={styles.continueBtn} onPress={handleContinue}>
+      <TouchableOpacity style={styles.continueBtn} onPress={() => {handleContinue; playButtonSound()}}>
         <Text style={styles.continueText}>CONTINUE</Text>
       </TouchableOpacity>
     </View>
@@ -169,7 +177,7 @@ export default function ForgotPasswordScreen() {
           <Image source={require('../assets/images/icon_success_dialog.png')} style={styles.successIcon} />
           <Text style={styles.successTitle}>Welcome Back!</Text>
           <Text style={styles.successDesc}>You have successfully reset and created a new password.</Text>
-          <TouchableOpacity style={styles.goHomeBtn} onPress={handleGoHome}>
+          <TouchableOpacity style={styles.goHomeBtn} onPress={() => {handleGoHome; playButtonSound()}}>
             <Text style={styles.goHomeText}>GO TO HOME</Text>
           </TouchableOpacity>
         </View>
