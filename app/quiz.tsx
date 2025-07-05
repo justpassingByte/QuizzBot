@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, SafeAreaView, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import AnswerButton from './components/AnswerButton';
-import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { API_URL } from '../constants/api';
+import AnswerButton from './components/AnswerButton';
+import useButtonSound from './components/useButtonSound';
 import { useAuth } from './context/AuthContext';
+import { useMusic } from './context/MusicContext';
 
 const { width } = Dimensions.get('window');
 const robotImg = require('../assets/images/robot2.png');
@@ -21,7 +23,8 @@ export default function QuizScreen() {
     score: initialScore, 
     answers: answersParam 
   } = params;
-  
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   const { user, updateUser } = useAuth();
 
   // --- State Management ---
@@ -170,7 +173,7 @@ export default function QuizScreen() {
           </AnimatedCircularProgress>
         </View>
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <TouchableOpacity style={styles.quizCloseBtn} onPress={() => router.replace('/(tabs)') }>
+            <TouchableOpacity style={styles.quizCloseBtn} onPress={() => {router.replace('/(tabs)'); playButtonSound();}}> 
             <Ionicons name="close" size={28} color="#222" />
           </TouchableOpacity>
         </View>

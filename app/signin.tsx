@@ -14,7 +14,9 @@ import {
   View,
 } from 'react-native';
 import { API_URL } from '../constants/api';
+import useButtonSound from './components/useButtonSound';
 import { useAuth } from './context/AuthContext';
+import { useMusic } from './context/MusicContext';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -24,7 +26,8 @@ export default function SignInScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { signIn } = useAuth();
-
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   const handleSignIn = async () => {
     setLoading(true);
     try {
@@ -53,7 +56,7 @@ export default function SignInScreen() {
       <ScrollView contentContainerStyle={{flexGrow:1}} keyboardShouldPersistTaps="handled">
         <View style={styles.container}>
           {/* Back button */}
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => {router.back(); playButtonSound();}}>
             <Text style={{fontSize: 28, color: '#222'}}>{'<'}</Text>
           </TouchableOpacity>
           {/* Robot image */}
@@ -84,17 +87,17 @@ export default function SignInScreen() {
               onChangeText={setPassword}
               placeholderTextColor="#bbb"
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{marginLeft:8, marginTop:8}}>
+            <TouchableOpacity onPress={() => {setShowPassword(!showPassword); playButtonSound()}} style={{marginLeft:8, marginTop:8}}>
               <Text style={{fontSize:18, color:'#1c58f2'}}>{showPassword ? '🙈' : '👁️'}</Text>
             </TouchableOpacity>
           </View>
           {/* Remember me & Forgot password */}
           <View style={styles.rowBetween}>
-            <TouchableOpacity style={styles.rememberRow} onPress={() => setRememberMe(!rememberMe)}>
+            <TouchableOpacity style={styles.rememberRow} onPress={() => {setRememberMe(!rememberMe); playButtonSound()}}>
               <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>{rememberMe && <Text style={{color:'#fff'}}>✓</Text>}</View>
               <Text style={styles.rememberText}>Remember me</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/forgot-password')}>
+            <TouchableOpacity onPress={() => {router.push('/forgot-password'); playButtonSound()}}>
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
@@ -107,7 +110,7 @@ export default function SignInScreen() {
           {/* Sign in button */}
           <TouchableOpacity
             style={styles.signInBtn}
-            onPress={handleSignIn}
+            onPress={() => {handleSignIn; playButtonSound()}}
             disabled={loading}
           >
             <Text style={styles.signInText}>{loading ? 'Signing in...' : 'SIGN IN'}</Text>

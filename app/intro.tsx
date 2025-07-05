@@ -1,6 +1,9 @@
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { Dimensions, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import useButtonSound from './components/useButtonSound';
+import { useMusic } from './context/MusicContext';
+
 
 const { width } = Dimensions.get('window');
 
@@ -34,8 +37,11 @@ export default function IntroScreen() {
   const [current, setCurrent] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const router = useRouter();
+  const { soundEffectsEnabled } = useMusic();
+  const { playButtonSound } = useButtonSound(soundEffectsEnabled);
 
   const handleNext = () => {
+    playButtonSound();
     if (current === 0) {
       flatListRef.current?.scrollToIndex({ index: 1, animated: true });
       setCurrent(1);
@@ -45,15 +51,18 @@ export default function IntroScreen() {
   };
 
   const handleContinueAsGuest = () => {
+    playButtonSound();
     router.replace('/(tabs)');
   };
 
   const handleSignInOrSignUp = () => {
+    playButtonSound();
     flatListRef.current?.scrollToIndex({ index: 2, animated: true });
     setCurrent(2);
   };
 
   const handleAlreadyHaveAccount = () => {
+    playButtonSound();
     router.push('/signin');
   };
 
@@ -67,21 +76,27 @@ export default function IntroScreen() {
         scrollEnabled={true}
         showsHorizontalScrollIndicator={false}
         extraData={current}
-        getItemLayout={(data, index) => (
-          { length: width, offset: width * index, index }
-        )}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
         renderItem={({ item, index }) => (
           <View style={styles.slide}>
             {(index === 1 || index === 2) && (
-              <TouchableOpacity style={{ position: 'absolute', top: 40, left: 24, zIndex: 10 }} onPress={() => {
-                if (index === 1) {
-                  flatListRef.current?.scrollToIndex({ index: 0, animated: true });
-                  setCurrent(0);
-                } else if (index === 2) {
-                  flatListRef.current?.scrollToIndex({ index: 1, animated: true });
-                  setCurrent(1);
-                }
-              }}>
+              <TouchableOpacity
+                style={{ position: 'absolute', top: 40, left: 24, zIndex: 10 }}
+                onPress={() => {
+                  playButtonSound();
+                  if (index === 1) {
+                    flatListRef.current?.scrollToIndex({ index: 0, animated: true });
+                    setCurrent(0);
+                  } else if (index === 2) {
+                    flatListRef.current?.scrollToIndex({ index: 1, animated: true });
+                    setCurrent(1);
+                  }
+                }}
+              >
                 <Text style={{ fontSize: 28, color: '#fff' }}>{'<'}</Text>
               </TouchableOpacity>
             )}
