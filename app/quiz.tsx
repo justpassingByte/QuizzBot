@@ -31,8 +31,10 @@ export default function QuizScreen() {
 
   const questions = useMemo(() => {
     if (!questionsParam) return [];
-    const param = Array.isArray(questionsParam) ? questionsParam[0] : questionsParam;
-    try { return JSON.parse(param); } catch { return []; }
+    if (typeof questionsParam === 'string') {
+      try { return JSON.parse(questionsParam); } catch { return []; }
+    }
+    return questionsParam; // đã là object
   }, [questionsParam]);
 
   const initialAnswers = useMemo(() => {
@@ -131,8 +133,15 @@ export default function QuizScreen() {
     setTimeout(() => navigateToResultScreen(isCorrect, newAnswers, nextScore, idx), 1200);
   };
 
+  const q = questions[current];
+
+  // Debug log
+  console.log('questions:', questions);
+  console.log('current:', current);
+  console.log('q:', q);
+
   useEffect(() => {
-    if (selected !== null || !questions.length) return;
+    if (selected !== null || !q) return;
     const timerId = setTimeout(() => {
       if (timer > 0) {
         setTimer(timer - 1);
@@ -143,9 +152,8 @@ export default function QuizScreen() {
       }
     }, 1000);
     return () => clearTimeout(timerId);
-  }, [timer, selected, questions]);
+  }, [timer, selected, q]);
 
-  const q = questions[current];
   if (!q) {
     return <View style={styles.root}><Text>Loading question...</Text></View>
   }

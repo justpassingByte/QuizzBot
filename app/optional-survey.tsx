@@ -21,12 +21,134 @@ interface AccountType {
   color: string;
 }
 
-type Topic = string;
+type TopicSlug = string;
+
+interface Topic {
+  slug: string;
+  name: string;
+}
+
+const topicConcepts = [
+  {
+    concept: 'Khoa học & Công nghệ',
+    topics: [
+      { slug: 'physics', name: 'Vật lý' },
+      { slug: 'chemistry', name: 'Hóa học' },
+      { slug: 'biology', name: 'Sinh học' },
+      { slug: 'ai', name: 'Trí tuệ nhân tạo' },
+      { slug: 'robotics', name: 'Robot' },
+      { slug: 'cs', name: 'Khoa học máy tính' },
+      { slug: 'tech-trends', name: 'Xu hướng công nghệ' },
+      { slug: 'sci-fi', name: 'Khoa học viễn tưởng' },
+      { slug: 'math', name: 'Toán học' },
+      { slug: 'astronomy', name: 'Thiên văn học' },
+      { slug: 'earth-science', name: 'Khoa học Trái Đất' },
+      { slug: 'engineering', name: 'Kỹ thuật' },
+      { slug: 'environment', name: 'Môi trường' },
+      { slug: 'medicine', name: 'Y học' },
+      { slug: 'science', name: 'Khoa học' },
+    ],
+  },
+  {
+    concept: 'Lịch sử & Xã hội',
+    topics: [
+      { slug: 'history', name: 'Lịch sử' },
+      { slug: 'countries', name: 'Quốc gia' },
+      { slug: 'economics', name: 'Kinh tế' },
+      { slug: 'geography', name: 'Địa lý' },
+      { slug: 'politics', name: 'Chính trị' },
+      { slug: 'law', name: 'Luật pháp' },
+      { slug: 'culture', name: 'Văn hóa' },
+      { slug: 'philosophy', name: 'Triết học' },
+      { slug: 'education', name: 'Giáo dục' },
+      { slug: 'sociology', name: 'Xã hội học' },
+      { slug: 'religion', name: 'Tôn giáo' },
+    ],
+  },
+  {
+    concept: 'Nghệ thuật & Văn hóa',
+    topics: [
+      { slug: 'art', name: 'Nghệ thuật' },
+      { slug: 'music', name: 'Âm nhạc' },
+      { slug: 'literature', name: 'Văn học' },
+      { slug: 'fiction', name: 'Tiểu thuyết' },
+      { slug: 'drama', name: 'Kịch' },
+      { slug: 'photography', name: 'Nhiếp ảnh' },
+      { slug: 'celebrities', name: 'Người nổi tiếng' },
+      { slug: 'movies', name: 'Phim ảnh' },
+      { slug: 'animation', name: 'Hoạt hình' },
+      { slug: 'fashion', name: 'Thời trang' },
+      { slug: 'design', name: 'Thiết kế' },
+    ],
+  },
+  {
+    concept: 'Ngôn ngữ',
+    topics: [
+      { slug: 'english', name: 'Tiếng Anh' },
+      { slug: 'spanish', name: 'Tiếng Tây Ban Nha' },
+      { slug: 'chinese', name: 'Tiếng Trung' },
+      { slug: 'french', name: 'Tiếng Pháp' },
+      { slug: 'german', name: 'Tiếng Đức' },
+      { slug: 'japanese', name: 'Tiếng Nhật' },
+      { slug: 'korean', name: 'Tiếng Hàn' },
+      { slug: 'vietnamese', name: 'Tiếng Việt' },
+    ],
+  },
+  {
+    concept: 'Sức khỏe & Đời sống',
+    topics: [
+      { slug: 'health', name: 'Sức khỏe' },
+      { slug: 'yoga', name: 'Yoga' },
+      { slug: 'nutrition', name: 'Dinh dưỡng' },
+      { slug: 'psychology', name: 'Tâm lý học' },
+      { slug: 'wildlife', name: 'Động vật hoang dã' },
+      { slug: 'food', name: 'Ẩm thực' },
+      { slug: 'lifestyle', name: 'Phong cách sống' },
+      { slug: 'travel', name: 'Du lịch' },
+    ],
+  },
+  {
+    concept: 'Giải trí & Thể thao',
+    topics: [
+      { slug: 'sports', name: 'Thể thao' },
+      { slug: 'football', name: 'Bóng đá' },
+      { slug: 'basketball', name: 'Bóng rổ' },
+      { slug: 'tennis', name: 'Quần vợt' },
+      { slug: 'cricket', name: 'Cricket' },
+      { slug: 'quiz', name: 'Câu đố' },
+      { slug: 'wonders', name: 'Kỳ quan' },
+      { slug: 'games', name: 'Trò chơi' },
+      { slug: 'esports', name: 'Thể thao điện tử' },
+      { slug: 'boardgames', name: 'Boardgame' },
+    ],
+  },
+  {
+    concept: 'Kinh doanh & Công việc',
+    topics: [
+      { slug: 'business', name: 'Kinh doanh' },
+      { slug: 'finance', name: 'Tài chính' },
+      { slug: 'marketing', name: 'Tiếp thị' },
+      { slug: 'startup', name: 'Khởi nghiệp' },
+      { slug: 'management', name: 'Quản lý' },
+      { slug: 'career', name: 'Nghề nghiệp' },
+      { slug: 'productivity', name: 'Năng suất' },
+    ],
+  },
+  {
+    concept: 'Khác',
+    topics: [
+      { slug: 'algebra', name: 'Đại số' },
+      { slug: 'logic', name: 'Logic' },
+      { slug: 'puzzle', name: 'Câu đố logic' },
+      { slug: 'random', name: 'Ngẫu nhiên' },
+    ],
+  },
+];
 
 const OptionalSurveyScreens = () => {
   const [currentScreen, setCurrentScreen] = useState(1);
   const [selectedAccount, setSelectedAccount] = useState('');
-  const [selectedTopics, setSelectedTopics] = useState<Topic[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<TopicSlug[]>([]);
   const router = useRouter();
 
   const accountTypes: AccountType[] = [
@@ -49,14 +171,14 @@ const OptionalSurveyScreens = () => {
   };
 
   interface HandleTopicToggle {
-    (topic: Topic): void;
+    (topicSlug: TopicSlug): void;
   }
 
-  const handleTopicToggle: HandleTopicToggle = (topic) => {
-    setSelectedTopics((prev: Topic[]) => 
-      prev.includes(topic) 
-        ? prev.filter((t: Topic) => t !== topic)
-        : [...prev, topic]
+  const handleTopicToggle: HandleTopicToggle = (topicSlug) => {
+    setSelectedTopics((prev: TopicSlug[]) =>
+      prev.includes(topicSlug)
+        ? prev.filter((slug: TopicSlug) => slug !== topicSlug)
+        : [...prev, topicSlug]
     );
   };
 
@@ -174,25 +296,33 @@ const OptionalSurveyScreens = () => {
             <Text style={styles.subtitle}>Chọn ít nhất một chủ đề để tiếp tục.</Text>
           </View>
 
-          <View style={styles.topicsContainer}>
-            {topics.map((topic) => (
-              <TouchableOpacity
-                key={topic}
-                onPress={() => handleTopicToggle(topic)}
-                style={[
-                  styles.topicTag,
-                  selectedTopics.includes(topic) && styles.selectedTopicTag
-                ]}
-              >
-                <Text style={[
-                  styles.topicText,
-                  selectedTopics.includes(topic) && styles.selectedTopicText
-                ]}>
-                  {topic}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {topicConcepts.map((conceptGroup) => (
+            <View key={conceptGroup.concept} style={styles.conceptGroup}>
+              <Text style={styles.conceptTitle}>{conceptGroup.concept}</Text>
+              <View style={styles.topicsContainer}>
+                {conceptGroup.topics.map((topic) => (
+                  <TouchableOpacity
+                    key={topic.slug}
+                    onPress={() => handleTopicToggle(topic.slug)}
+                    style={[
+                      styles.topicTag,
+                      selectedTopics.includes(topic.slug) && styles.selectedTopicTag,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.topicText,
+                        selectedTopics.includes(topic.slug) &&
+                          styles.selectedTopicText,
+                      ]}
+                    >
+                      {topic.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -341,18 +471,15 @@ const styles = StyleSheet.create({
   topicsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 40,
+    gap: 10,
+    marginBottom: 10,
   },
   topicTag: {
-    width: (width - 50) / 3, // Chia thành 3 cột thay vì 2
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 20,
     backgroundColor: '#f3f4f6',
-    marginBottom: 12,
     alignItems: 'center',
-    minHeight: 44,
     justifyContent: 'center',
   },
   selectedTopicTag: {
@@ -367,6 +494,15 @@ const styles = StyleSheet.create({
   },
   selectedTopicText: {
     color: '#fff',
+  },
+  conceptGroup: {
+    marginBottom: 24,
+  },
+  conceptTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 16,
   },
   demoNav: {
     flexDirection: 'row',

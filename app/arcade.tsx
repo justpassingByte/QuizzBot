@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
-import { fetchQuizzes, getQuestionById } from '../constants/api';
+import { fetchQuizzes, getQuestionById, fetchRecommendedQuizzes } from '../constants/api';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from './context/AuthContext';
 
 const { width } = Dimensions.get('window');
 const robotImg = require('../assets/images/robot2.png');
@@ -12,18 +13,25 @@ export default function ArcadeScreen() {
   const [loading, setLoading] = useState(true);
   const [selecting, setSelecting] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
-    fetchQuizzes().then((data) => {
-      setQuizzes(data.slice(0, 5)); // chỉ lấy 5 quiz đầu
+    if (!user) {
+      setLoading(false);
+      setQuizzes([]);
+      return;
+    }
+    fetchRecommendedQuizzes(user.id).then((data) => {
+      setQuizzes(data.slice(0, 5));
       setLoading(false);
     });
-  }, []);
+  }, [user]);
 
   const handleSelectQuiz = async (quiz: any) => {
     setSelecting(true);
     const questions = await getQuestionById(quiz.id);
     setSelecting(false);
+    console.log('Quiz data before navigating to quiz.tsx:', questions);
     router.push({ pathname: '../quiz', params: { quizId: quiz.id, topic: quiz.topic, questions: JSON.stringify(questions) } });
   };
 
@@ -68,7 +76,7 @@ export default function ArcadeScreen() {
                 disabled={selecting}
                 activeOpacity={0.85}
               >
-                <Text style={styles.quizBtnText}>{quiz.topic}</Text>
+                <Text style={styles.quizBtnText}>{quiz.topicName || quiz.topicSlug || quiz.topic}</Text>
               </TouchableOpacity>
             </LinearGradient>
           ))

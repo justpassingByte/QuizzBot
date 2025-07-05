@@ -68,15 +68,13 @@ export async function getQuestionById(quizId: string) {
     const res = await axios.get(`${API_URL}/api/quizzes/${quizId}`);
     // Chuẩn hóa dữ liệu trả về cho quiz.tsx
     const quiz = res.data;
-    if (quiz && quiz.quiz && Array.isArray(quiz.quiz.questions)) {
-      return quiz.quiz.questions.map((q: any) => ({
-        question: q.text,
-        answers: q.choices.map((c: any) => ({ id: c.id, text: c.text, correct: !!c.isCorrect })),
-        explanation: q.explanation,
-        id: q.id,
-      }));
-    }
-    return [];
+    const questions = quiz.quiz?.questions || quiz.questions || [];
+    return questions.map((q: any) => ({
+      question: q.text,
+      answers: q.answers || [],
+      explanation: q.explanation,
+      id: q.id,
+    }));
   } catch (e) {
     console.log(e);
     // fallback mock
@@ -113,5 +111,16 @@ export async function updateUserFavoriteTopics(userId: string, topics: string[])
   } catch (error) {
     console.error('Error updating user favorite topics:', error);
     throw error;
+  }
+}
+
+// Lấy quiz recommend cho user
+export async function fetchRecommendedQuizzes(userId: string) {
+  try {
+    const res = await axios.get(`${API_URL}/api/recommended/${userId}`);
+    return res.data?.quizzes || [];
+  } catch (e) {
+    console.error('Failed to fetch recommended quizzes', e);
+    return [];
   }
 } 

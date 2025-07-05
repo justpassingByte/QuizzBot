@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, Alert, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { createQuiz } from '../constants/api';
 
 const { width } = Dimensions.get('window');
 
@@ -68,20 +69,13 @@ export default function CreateQuizScreen() {
         includeHints,
         maxAttempts: 3,
       };
-      // Điều hướng đến màn hình loading-quiz và truyền params
-      router.push({
-        pathname: '/loading-quiz',
-        params: {
-          topic: topic.trim(),
-          config: JSON.stringify(config),
-          level: level,
-        },
-      });
+      // Gọi API tạo quiz, chỉ điều hướng khi thành công
+      await createQuiz(topic.trim(), config, level);
+      router.push('/arcade');
     } catch (err: any) {
-      // Sẽ không còn lỗi ở đây, lỗi sẽ được xử lý ở màn hình loading-quiz
-      Alert.alert('Lỗi', 'Không thể chuẩn bị tạo quiz.');
+      Alert.alert('Lỗi', 'Không thể tạo quiz.');
     } finally {
-      setLoading(false); // Đảm bảo loading tắt sau khi điều hướng (nếu không có lỗi)
+      setLoading(false);
     }
   };
 

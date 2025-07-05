@@ -31,7 +31,7 @@ export default function QuizResultScreen() {
         console.error("Failed to parse suggested topics", e);
       }
     }
-  }, [params]);
+  }, []);
 
   return (
     <SafeAreaView style={styles.root}>
