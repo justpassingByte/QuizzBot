@@ -56,18 +56,13 @@ export default function CreateQuizScreen() {
     try {
       const config = {
         multipleChoiceCount: Number(multipleChoiceCount),
-        codingQuestionCount: 0,
         difficultyDistribution: {
           basic: Number(basic),
           intermediate: Number(intermediate),
           advanced: Number(advanced),
         },
-        typeDistribution: {
-          multipleChoice: 1,
-          coding: 0,
-        },
         includeHints,
-        maxAttempts: 3,
+        maxAttempts: Number(maxAttempts),
       };
       // Gọi API tạo quiz, chỉ điều hướng khi thành công
       await createQuiz(topic.trim(), config, level);
