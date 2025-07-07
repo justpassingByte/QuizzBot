@@ -22,6 +22,7 @@ export default function ProfileScreen() {
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   const { user } = useAuth();
+  console.log('DEBUG profile user:', user);
   const [statistics, setStatistics] = useState<UserStatistics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,6 +66,8 @@ export default function ProfileScreen() {
     { icon: 'speedometer', count: Number(statistics?.averageScore.toFixed(0) ?? 0), label: 'Avg. Score', color: '#4CAF50' },
   ];
 
+  const defaultAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2?w=100&h=100&fit=crop&crop=face';
+
   return (
     <LinearGradient colors={['#0a4cff', '#1c58f2']} style={styles.gradient}>
       <SafeAreaView style={styles.container}>
@@ -101,7 +104,7 @@ export default function ProfileScreen() {
           <View style={styles.profileSection}>
             <View style={styles.profileImageContainer}>
               <Image 
-                source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face' }}
+                source={{ uri: user?.avatar || defaultAvatar }}
                 style={styles.profileImage}
               />
             </View>

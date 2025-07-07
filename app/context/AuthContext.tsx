@@ -7,6 +7,10 @@ interface User {
   username: string;
   email: string;
   score: number;
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  avatar?: string;
   // Thêm các thuộc tính khác của user nếu cần
 }
 

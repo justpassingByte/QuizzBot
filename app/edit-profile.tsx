@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Alert,
     Image,
@@ -16,33 +16,131 @@ import {
 import useButtonSound from './components/useButtonSound';
 import { useMusic } from './context/MusicContext';
 import { useAuth } from './context/AuthContext';
+import * as ImagePicker from 'expo-image-picker';
+import { API_URL } from '../constants/api';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 export default function EditProfileScreen() {
   const router = useRouter();
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
+  // Fallback for avatar if user or user.avatar is missing
+  const defaultAvatar = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&crop=face';
   const [userName, setUserName] = useState(user?.username || '');
   const [firstName, setFirstName] = useState('John');
   const [lastName, setLastName] = useState('Brown');
   const [email, setEmail] = useState(user?.email || '');
   const [dateOfBirth, setDateOfBirth] = useState('12/7/1995');
+  const [avatar, setAvatar] = useState((user && 'avatar' in user && (user as any).avatar) ? (user as any).avatar : defaultAvatar);
+  const [avatarFile, setAvatarFile] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const handleSave = () => {
+  useEffect(() => {
+    setUserName(user?.username || '');
+    setFirstName(user?.firstName || '');
+    setLastName(user?.lastName || '');
+    setEmail(user?.email || '');
+    setDateOfBirth(user?.dateOfBirth || '');
+    setAvatar((user && 'avatar' in user && (user as any).avatar) ? (user as any).avatar : defaultAvatar);
+  }, [user]);
+
+  const handleSave = async () => {
     if (soundEffectsEnabled) playButtonSound();
-    Alert.alert('Thành công', 'Thông tin đã được cập nhật!', [
-      { text: 'OK', onPress: () => router.back() }
-    ]);
+    if (!user) {
+      Alert.alert('Lỗi', 'Không tìm thấy thông tin người dùng.');
+      return;
+    }
+    setIsSaving(true);
+    let avatarUrl = avatar;
+    // Upload avatar if changed
+    if (avatarFile) {
+      console.log('DEBUG avatarFile:', avatarFile);
+      if (!avatarFile.uri || !(avatarFile.fileName || avatarFile.name)) {
+        Alert.alert('Lỗi', 'File ảnh không hợp lệ.');
+        setIsSaving(false);
+        return;
+      }
+      const formData = new FormData();
+      formData.append('avatar', {
+        uri: avatarFile.uri,
+        name: avatarFile.fileName || avatarFile.name || 'avatar.jpg',
+        type: avatarFile.type || 'image/jpeg',
+      } as any);
+      try {
+        const res = await fetch(`${API_URL}/api/users/${user.id}/avatar`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (res.ok && data.avatar) {
+          avatarUrl = `${API_URL}/${data.avatar}`;
+          setAvatar(avatarUrl);
+        } else {
+          Alert.alert('Lỗi', 'Không thể upload ảnh đại diện.');
+          setIsSaving(false);
+          return;
+        }
+      } catch (err) {
+        Alert.alert('Lỗi', 'Không thể upload ảnh đại diện.');
+        setIsSaving(false);
+        return;
+      }
+    }
+    // Update user info
+    console.log('DEBUG update body:', {
+      username: userName,
+      firstName,
+      lastName,
+      email,
+      dateOfBirth,
+      avatar: avatarUrl,
+    });
+    try {
+      const res = await fetch(`${API_URL}/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: userName,
+          firstName,
+          lastName,
+          email,
+          dateOfBirth,
+          avatar: avatarUrl,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        updateUser(data); // update context
+        Alert.alert('Thành công', 'Thông tin đã được cập nhật!', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        Alert.alert('Lỗi', data.error || 'Không thể cập nhật thông tin.');
+      }
+    } catch (err) {
+      Alert.alert('Lỗi', 'Không thể cập nhật thông tin.');
+    }
+    setIsSaving(false);
   };
 
-  const handleChangeAvatar = () => {
+  const handleChangeAvatar = async () => {
     if (soundEffectsEnabled) playButtonSound();
-    Alert.alert('Đổi ảnh đại diện', 'Chọn nguồn ảnh', [
-      { text: 'Camera', onPress: () => console.log('Camera') },
-      { text: 'Thư viện', onPress: () => console.log('Library') },
-      { text: 'Hủy', style: 'cancel' }
-    ]);
+    // Pick image from library
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+      base64: false, // Đảm bảo không lấy base64!
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const picked = result.assets[0];
+      setAvatar(picked.uri);
+      setAvatarFile(picked);
+    }
   };
 
   return (
@@ -77,7 +175,7 @@ export default function EditProfileScreen() {
           <View style={styles.profileImageSection}>
             <TouchableOpacity onPress={handleChangeAvatar} style={styles.profileImageContainer}>
               <Image 
-                source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&crop=face' }}
+                source={{ uri: avatar }}
                 style={styles.profileImage}
               />
               <View style={styles.editImageIcon}>
@@ -146,24 +244,42 @@ export default function EditProfileScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Date of Birth</Text>
-              <TouchableOpacity style={styles.dateInput}>
+              <View style={styles.dateInput}>
                 <TextInput
                   style={[styles.input, { flex: 1 }]}
                   value={dateOfBirth}
-                  onChangeText={setDateOfBirth}
+                  editable={false}
                   placeholder="Chọn ngày sinh"
                   placeholderTextColor="#999"
+                  pointerEvents="none"
                 />
-                <Ionicons name="calendar" size={20} color="#1c58f2" />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                  <Ionicons name="calendar" size={20} color="#1c58f2" />
+                </TouchableOpacity>
+              </View>
+              <DateTimePickerModal
+                isVisible={showDatePicker}
+                mode="date"
+                date={dateOfBirth ? parseDate(dateOfBirth) : new Date()}
+                onConfirm={(selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    const d = selectedDate;
+                    const formatted = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                    setDateOfBirth(formatted);
+                  }
+                }}
+                onCancel={() => setShowDatePicker(false)}
+                maximumDate={new Date()}
+              />
             </View>
           </View>
         </ScrollView>
 
         {/* Save Button */}
         <View style={styles.saveButtonContainer}>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Lưu thay đổi</Text>
+          <TouchableOpacity style={[styles.saveButton, isSaving && { opacity: 0.6 }]} onPress={handleSave} disabled={isSaving}>
+            <Text style={styles.saveButtonText}>{isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -389,3 +505,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+
+// Helper để parse date string dd/mm/yyyy về Date object
+function parseDate(dateStr: string): Date {
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+  }
+  return new Date();
+}

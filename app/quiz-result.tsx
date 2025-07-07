@@ -17,6 +17,8 @@ export default function QuizResultScreen() {
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [xpEarned, setXpEarned] = useState(0);
   const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
+  const [totalTime, setTotalTime] = useState<number | null>(null);
+  const [relatedQuizzes, setRelatedQuizzes] = useState<any[]>([]);
 
   useEffect(() => {
     if (params.score) setScore(Number(params.score));
@@ -29,6 +31,16 @@ export default function QuizResultScreen() {
         setSuggestedTopics(JSON.parse(params.suggestedTopics as string));
       } catch (e) {
         console.error("Failed to parse suggested topics", e);
+      }
+    }
+    if (params.totalTime) setTotalTime(Number(params.totalTime));
+    // Parse relatedQuizzes nếu có
+    if (params.relatedQuizzes) {
+      try {
+        const quizzes = typeof params.relatedQuizzes === 'string' ? JSON.parse(params.relatedQuizzes) : params.relatedQuizzes;
+        setRelatedQuizzes(quizzes);
+      } catch (e) {
+        setRelatedQuizzes([]);
       }
     }
   }, []);
@@ -57,8 +69,8 @@ export default function QuizResultScreen() {
           <View style={styles.achievementBox}>
             <Ionicons name="time" size={32} color="#285ecc" style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
-              <Text style={styles.achievementValue}>{totalQuestions}</Text>
-              <Text style={styles.achievementLabel}>Total Questions</Text>
+              <Text style={styles.achievementValue}>{totalTime !== null ? `${totalTime}s` : '-'}</Text>
+              <Text style={styles.achievementLabel}>Total Time</Text>
             </View>
           </View>
           <View style={styles.achievementBox}>
@@ -71,16 +83,39 @@ export default function QuizResultScreen() {
         </View>
       </View>
       <View style={{flex: 1, alignItems: 'center', justifyContent: 'flex-end', width: '100%'}}>
-        {/* Gợi ý topic liên quan */}
-        {suggestedTopics.length > 0 && (
+        {/* Gợi ý quiz liên quan */}
+        {relatedQuizzes && relatedQuizzes.length > 0 ? (
           <View style={{ marginTop: 16, width: 340 }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Related Topics:</Text>
-            {suggestedTopics.map((topic: string, idx: number) => (
-              <TouchableOpacity key={idx} onPress={() => router.push('/loading-quiz')}>
-                <Text style={{ color: '#1c58f2', marginTop: 4 }}>{topic}</Text>
-              </TouchableOpacity>
+            <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Related Quizzes:</Text>
+            {relatedQuizzes.map((quiz, idx) => (
+              <View key={quiz.id || idx} style={{
+                backgroundColor: '#f5f7fa',
+                borderRadius: 12,
+                padding: 16,
+                marginBottom: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                shadowColor: '#000',
+                shadowOpacity: 0.06,
+                shadowRadius: 4,
+                elevation: 1,
+              }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: 'bold', fontSize: 15 }}>{quiz.topicName || quiz.topicSlug}</Text>
+                  <Text style={{ color: '#888', fontSize: 13 }}>Questions: {quiz.questionCount}</Text>
+                </View>
+                <TouchableOpacity
+                  style={{ backgroundColor: '#1c58f2', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16 }}
+                  onPress={() => router.push({ pathname: '/loading-quiz', params: { topic: quiz.topicSlug } })}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Start</Text>
+                </TouchableOpacity>
+              </View>
             ))}
           </View>
+        ) : (
+          <Text style={{ color: '#888', marginTop: 16 }}>No related quizzes found.</Text>
         )}
         {/* Retry Button */}
         <TouchableOpacity style={styles.retryBtn} onPress={() => router.back()}>

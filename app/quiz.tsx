@@ -29,6 +29,10 @@ export default function QuizScreen() {
   const current = Number(initialCurrent || 0);
   const score = Number(initialScore || 0);
 
+  const [quizStartTime] = useState(Date.now()); // Track quiz start time
+  const [questionStartTime, setQuestionStartTime] = useState(Date.now()); // Track per-question start
+  const [totalTime, setTotalTime] = useState(0); // Total quiz time in seconds
+
   const questions = useMemo(() => {
     if (!questionsParam) return [];
     if (typeof questionsParam === 'string') {
@@ -53,11 +57,14 @@ export default function QuizScreen() {
       Alert.alert("Lỗi", "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
       return router.replace('/signin');
     }
-    
+    // Tính tổng thời gian thực tế
+    const totalTimeSec = finalAnswers.reduce((sum, ans) => sum + (ans.timeTaken || 0), 0);
+    setTotalTime(totalTimeSec);
     const payload = { 
       quizId, 
       userId: user.id, 
-      answers: finalAnswers 
+      answers: finalAnswers,
+      totalTime: totalTimeSec,
     };
 
     console.log('--- SUBMITTING QUIZ PAYLOAD ---');
@@ -123,14 +130,21 @@ export default function QuizScreen() {
     const isCorrect = q.answers[idx].correct;
     setSelected(idx);
     
+    const now = Date.now();
+    const timeTaken = Math.round((now - questionStartTime) / 1000); // seconds
     const newAnswers = [...answers, {
       questionId: q.id,
       userAnswer: q.answers[idx].id,
+      timeTaken,
+      difficulty: q.difficulty || q?.metadata?.difficulty || 'intermediate',
     }];
     setAnswers(newAnswers);
     
     const nextScore = isCorrect ? score + 1 : score;
-    setTimeout(() => navigateToResultScreen(isCorrect, newAnswers, nextScore, idx), 1200);
+    setTimeout(() => {
+      setQuestionStartTime(Date.now());
+      navigateToResultScreen(isCorrect, newAnswers, nextScore, idx);
+    }, 1200);
   };
 
   const q = questions[current];
@@ -146,8 +160,16 @@ export default function QuizScreen() {
       if (timer > 0) {
         setTimer(timer - 1);
       } else {
-        const newAnswers = [...answers, { questionId: q.id, userAnswer: null }];
+        const now = Date.now();
+        const timeTaken = Math.round((now - questionStartTime) / 1000); // seconds
+        const newAnswers = [...answers, { 
+          questionId: q.id, 
+          userAnswer: null, 
+          timeTaken,
+          difficulty: q.difficulty || q?.metadata?.difficulty || 'intermediate',
+        }];
         setAnswers(newAnswers);
+        setQuestionStartTime(Date.now());
         navigateToResultScreen(false, newAnswers, score, -1);
       }
     }, 1000);
