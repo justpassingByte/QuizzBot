@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter, useFocusEffect } from 'expo-router';
-import React, { useState, useCallback } from 'react';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import useButtonSound from '../components/useButtonSound';
-import { useMusic } from '../context/MusicContext';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { API_URL } from '../../constants/api';
+import useButtonSound from '../components/useButtonSound';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useMusic } from '../context/MusicContext';
 
 interface User {
   id: string;
@@ -25,6 +26,7 @@ export default function LeaderboardScreen() {
   const [leaderboard, setLeaderboard] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const { user: currentUser } = useAuth();
+  const { t } = useLanguage();
 
   useFocusEffect(
     useCallback(() => {
@@ -86,7 +88,7 @@ export default function LeaderboardScreen() {
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Leaderboard</Text>
+          <Text style={styles.headerTitle}>{t.leaderboard.title}</Text>
           <View style={styles.pointsBadge}>
             <Text style={styles.pointsText}>{currentUser?.score ?? 0}</Text>
             <Ionicons name="star" size={16} color="#ffd700" />
@@ -103,7 +105,7 @@ export default function LeaderboardScreen() {
             }}
           >
             <Text style={[styles.tabText, activeTab === 'Global' && styles.activeTabText]}>
-              Global
+              {t.leaderboard.global}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -114,7 +116,7 @@ export default function LeaderboardScreen() {
             }}
           >
             <Text style={[styles.tabText, activeTab === 'National' && styles.activeTabText]}>
-              National
+              {t.leaderboard.national}
             </Text>
           </TouchableOpacity>
         </View>
@@ -147,7 +149,7 @@ export default function LeaderboardScreen() {
                       {user.username}
                     </Text>
                     <Text style={[styles.rankingScore, user.isCurrentUser && styles.currentUserScore]}>
-                      {user.score} pts
+                      {user.score} {t.leaderboard.pts}
                     </Text>
                   </View>
                 ))}

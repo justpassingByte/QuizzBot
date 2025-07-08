@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, Alert, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { createQuiz } from '../constants/api';
+import { useLanguage } from './context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -37,6 +38,7 @@ export default function CreateQuizScreen() {
   const [level, setLevel] = useState('intermediate');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { t } = useLanguage();
 
   // Khi chọn preset, tự động set config
   const handleSelectLevel = (lv: string) => {
@@ -68,7 +70,7 @@ export default function CreateQuizScreen() {
       await createQuiz(topic.trim(), config, level);
       router.push('/arcade');
     } catch (err: any) {
-      Alert.alert('Lỗi', 'Không thể tạo quiz.');
+      Alert.alert(t.common.error, t.createQuiz.error);
     } finally {
       setLoading(false);
     }
@@ -76,26 +78,29 @@ export default function CreateQuizScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <Text style={styles.title}>Create your own quiz</Text>
+      <Text style={styles.title}>{t.createQuiz.title}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter a topic (e.g. Harry Potter, Math, ... )"
+        placeholder={t.createQuiz.topicPlaceholder}
         value={topic}
         onChangeText={setTopic}
       />
-      <Text style={styles.label}>Level (Preset)</Text>
+      <Text style={styles.label}>{t.createQuiz.level}</Text>
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-        {['basic', 'intermediate', 'advanced'].map((lv) => (
-          <TouchableOpacity
-            key={lv}
-            style={[styles.levelBtn, level === lv && styles.levelBtnActive]}
-            onPress={() => handleSelectLevel(lv)}
-          >
-            <Text style={level === lv ? styles.levelBtnTextActive : styles.levelBtnText}>{lv}</Text>
-          </TouchableOpacity>
-        ))}
+        {['basic', 'intermediate', 'advanced'].map((lv) => {
+          const labelKey = lv as 'basic' | 'intermediate' | 'advanced';
+          return (
+            <TouchableOpacity
+              key={lv}
+              style={[styles.levelBtn, level === lv && styles.levelBtnActive]}
+              onPress={() => handleSelectLevel(lv)}
+            >
+              <Text style={level === lv ? styles.levelBtnTextActive : styles.levelBtnText}>{t.createQuiz[labelKey]}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
-      <Text style={styles.label}>Multiple Choice Count</Text>
+      <Text style={styles.label}>{t.createQuiz.multipleChoiceCount}</Text>
       <TextInput
         style={styles.input}
         placeholder="5"
@@ -103,13 +108,13 @@ export default function CreateQuizScreen() {
         value={multipleChoiceCount}
         onChangeText={setMultipleChoiceCount}
       />
-      <Text style={styles.label}>Difficulty Distribution (basic/intermediate/advanced)</Text>
+      <Text style={styles.label}>{t.createQuiz.difficultyDistribution}</Text>
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
         <TextInput style={[styles.input, { flex: 1 }]} placeholder="0.3" keyboardType="decimal-pad" value={basic} onChangeText={setBasic} />
         <TextInput style={[styles.input, { flex: 1 }]} placeholder="0.5" keyboardType="decimal-pad" value={intermediate} onChangeText={setIntermediate} />
         <TextInput style={[styles.input, { flex: 1 }]} placeholder="0.2" keyboardType="decimal-pad" value={advanced} onChangeText={setAdvanced} />
       </View>
-      <Text style={styles.label}>Max Attempts</Text>
+      <Text style={styles.label}>{t.createQuiz.maxAttempts}</Text>
       <TextInput
         style={styles.input}
         placeholder="3"
@@ -121,10 +126,10 @@ export default function CreateQuizScreen() {
         <TouchableOpacity onPress={() => setIncludeHints((v) => !v)} style={styles.checkbox}>
           <View style={[styles.checkboxBox, includeHints && styles.checkboxBoxChecked]} />
         </TouchableOpacity>
-        <Text style={{ marginLeft: 8 }}>Include Hints</Text>
+        <Text style={{ marginLeft: 8 }}>{t.createQuiz.includeHints}</Text>
       </View>
       <TouchableOpacity style={styles.createBtn} onPress={handleCreateQuiz} disabled={loading || !topic.trim()}>
-        <Text style={styles.createBtnText}>{loading ? 'Creating...' : 'Create Quiz'}</Text>
+        <Text style={styles.createBtnText}>{loading ? t.createQuiz.creating : t.createQuiz.create}</Text>
       </TouchableOpacity>
       {loading && <ActivityIndicator size="large" color="#1c58f2" style={{ marginTop: 24 }} />}
     </SafeAreaView>

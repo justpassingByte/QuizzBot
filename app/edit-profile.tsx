@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
     Image,
@@ -13,18 +14,19 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import useButtonSound from './components/useButtonSound';
-import { useMusic } from './context/MusicContext';
-import { useAuth } from './context/AuthContext';
-import * as ImagePicker from 'expo-image-picker';
-import { API_URL } from '../constants/api';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { API_URL } from '../constants/api';
+import useButtonSound from './components/useButtonSound';
+import { useAuth } from './context/AuthContext';
+import { useLanguage } from './context/LanguageContext';
+import { useMusic } from './context/MusicContext';
 
 export default function EditProfileScreen() {
   const router = useRouter();
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   const { user, updateUser } = useAuth();
+  const { t } = useLanguage();
 
   // Fallback for avatar if user or user.avatar is missing
   const defaultAvatar = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&crop=face';
@@ -50,7 +52,7 @@ export default function EditProfileScreen() {
   const handleSave = async () => {
     if (soundEffectsEnabled) playButtonSound();
     if (!user) {
-      Alert.alert('Lỗi', 'Không tìm thấy thông tin người dùng.');
+      Alert.alert(t.common.error, t.profile.userNotFound);
       return;
     }
     setIsSaving(true);
@@ -59,7 +61,7 @@ export default function EditProfileScreen() {
     if (avatarFile) {
       console.log('DEBUG avatarFile:', avatarFile);
       if (!avatarFile.uri || !(avatarFile.fileName || avatarFile.name)) {
-        Alert.alert('Lỗi', 'File ảnh không hợp lệ.');
+        Alert.alert(t.common.error, t.profile.invalidImageFile);
         setIsSaving(false);
         return;
       }
@@ -79,12 +81,12 @@ export default function EditProfileScreen() {
           avatarUrl = `${API_URL}/${data.avatar}`;
           setAvatar(avatarUrl);
         } else {
-          Alert.alert('Lỗi', 'Không thể upload ảnh đại diện.');
+          Alert.alert(t.common.error, t.profile.failedToUploadAvatar);
           setIsSaving(false);
           return;
         }
       } catch (err) {
-        Alert.alert('Lỗi', 'Không thể upload ảnh đại diện.');
+        Alert.alert(t.common.error, t.profile.failedToUploadAvatar);
         setIsSaving(false);
         return;
       }
@@ -114,14 +116,13 @@ export default function EditProfileScreen() {
       const data = await res.json();
       if (res.ok) {
         updateUser(data); // update context
-        Alert.alert('Thành công', 'Thông tin đã được cập nhật!', [
-          { text: 'OK', onPress: () => router.back() }
-        ]);
+        Alert.alert(t.common.success, t.profile.infoUpdated);
+        router.back();
       } else {
-        Alert.alert('Lỗi', data.error || 'Không thể cập nhật thông tin.');
+        Alert.alert(t.common.error, data.error || t.profile.failedToUpdateInfo);
       }
     } catch (err) {
-      Alert.alert('Lỗi', 'Không thể cập nhật thông tin.');
+      Alert.alert(t.common.error, t.profile.failedToUpdateInfo);
     }
     setIsSaving(false);
   };
@@ -156,10 +157,10 @@ export default function EditProfileScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
+          <Text style={styles.headerTitle}>{t.profile.title}</Text>
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.headerIcon}>
-              <Text style={styles.levelBadge}>L1</Text>
+              <Text style={styles.levelBadge}>{t.profile.level} 1</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.headerIcon}>
               <Ionicons name="trophy" size={20} color="#ffd700" />
@@ -187,46 +188,46 @@ export default function EditProfileScreen() {
           {/* Form Fields */}
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>User Name</Text>
+              <Text style={styles.label}>{t.profile.userName}</Text>
               <TextInput
                 style={styles.input}
                 value={userName}
                 onChangeText={setUserName}
-                placeholder="Nhập tên người dùng"
+                placeholder={t.profile.userName}
                 placeholderTextColor="#999"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>First Name</Text>
+              <Text style={styles.label}>{t.profile.firstName}</Text>
               <TextInput
                 style={styles.input}
                 value={firstName}
                 onChangeText={setFirstName}
-                placeholder="Nhập tên"
+                placeholder={t.profile.firstName}
                 placeholderTextColor="#999"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Last Name</Text>
+              <Text style={styles.label}>{t.profile.lastName}</Text>
               <TextInput
                 style={styles.input}
                 value={lastName}
                 onChangeText={setLastName}
-                placeholder="Nhập họ"
+                placeholder={t.profile.lastName}
                 placeholderTextColor="#999"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>{t.profile.email}</Text>
               <View style={styles.emailContainer}>
                 <TextInput
                   style={[styles.input, styles.emailInput]}
                   value={email}
                   onChangeText={setEmail}
-                  placeholder="Nhập email"
+                  placeholder={t.profile.email}
                   placeholderTextColor="#999"
                   keyboardType="email-address"
                 />
@@ -234,7 +235,7 @@ export default function EditProfileScreen() {
                   style={styles.sendButton}
                   onPress={() => {
                     if (soundEffectsEnabled) playButtonSound();
-                    Alert.alert('Gửi email', 'Đã gửi email xác nhận!');
+                    Alert.alert('Gửi email', t.profile.emailSent);
                   }}
                 >
                   <Text style={styles.sendButtonText}>Send</Text>
@@ -243,13 +244,13 @@ export default function EditProfileScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Date of Birth</Text>
+              <Text style={styles.label}>{t.profile.dateOfBirth}</Text>
               <View style={styles.dateInput}>
                 <TextInput
                   style={[styles.input, { flex: 1 }]}
                   value={dateOfBirth}
                   editable={false}
-                  placeholder="Chọn ngày sinh"
+                  placeholder={t.profile.selectDate}
                   placeholderTextColor="#999"
                   pointerEvents="none"
                 />
@@ -279,7 +280,7 @@ export default function EditProfileScreen() {
         {/* Save Button */}
         <View style={styles.saveButtonContainer}>
           <TouchableOpacity style={[styles.saveButton, isSaving && { opacity: 0.6 }]} onPress={handleSave} disabled={isSaving}>
-            <Text style={styles.saveButtonText}>{isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}</Text>
+            <Text style={styles.saveButtonText}>{isSaving ? t.profile.saving : t.profile.saveChanges}</Text>
           </TouchableOpacity>
         </View>
 

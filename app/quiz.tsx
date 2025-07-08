@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, SafeAreaView, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import AnswerButton from './components/AnswerButton';
-import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { API_URL } from '../constants/api';
+import AnswerButton from './components/AnswerButton';
 import { useAuth } from './context/AuthContext';
+import { useLanguage } from './context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 const robotImg = require('../assets/images/robot2.png');
@@ -13,19 +14,20 @@ const robotImg = require('../assets/images/robot2.png');
 export default function QuizScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { 
-    quizId: paramQuizId, 
-    topic, 
-    questions: questionsParam, 
-    current: initialCurrent, 
-    score: initialScore, 
-    answers: answersParam 
+  const {
+    quizId: paramQuizId,
+    topic,
+    questions: questionsParam,
+    current: initialCurrent,
+    score: initialScore,
+    answers: answersParam
   } = params;
-  
+
   const { user, updateUser } = useAuth();
+  const { t, language } = useLanguage();
 
   // --- State Management ---
-  const [quizId] = useState(paramQuizId); 
+  const [quizId] = useState(paramQuizId);
   const current = Number(initialCurrent || 0);
   const score = Number(initialScore || 0);
 
@@ -38,7 +40,7 @@ export default function QuizScreen() {
     if (typeof questionsParam === 'string') {
       try { return JSON.parse(questionsParam); } catch { return []; }
     }
-    return questionsParam; // đã là object
+    return questionsParam;
   }, [questionsParam]);
 
   const initialAnswers = useMemo(() => {
@@ -47,29 +49,25 @@ export default function QuizScreen() {
     try { return JSON.parse(param); } catch { return []; }
   }, [answersParam]);
   const [answers, setAnswers] = useState(initialAnswers);
-  
+
   const [selected, setSelected] = useState<number | null>(null);
   const [timer, setTimer] = useState(10);
 
   // --- Core Functions ---
   const submitQuiz = async (finalAnswers: any[]) => {
     if (!user) {
-      Alert.alert("Lỗi", "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
+      Alert.alert(t.common.error, t.auth.signIn);
       return router.replace('/signin');
     }
     // Tính tổng thời gian thực tế
     const totalTimeSec = finalAnswers.reduce((sum, ans) => sum + (ans.timeTaken || 0), 0);
     setTotalTime(totalTimeSec);
-    const payload = { 
-      quizId, 
-      userId: user.id, 
+    const payload = {
+      quizId,
+      userId: user.id,
       answers: finalAnswers,
       totalTime: totalTimeSec,
     };
-
-    console.log('--- SUBMITTING QUIZ PAYLOAD ---');
-    console.log(JSON.stringify(payload, null, 2));
-    console.log('-----------------------------');
 
     try {
       const response = await fetch(`${API_URL}/api/quizzes/submit-result`, {
@@ -95,8 +93,7 @@ export default function QuizScreen() {
         params: { ...resultData, suggestedTopics: JSON.stringify(resultData.suggestedTopics || []) },
       });
     } catch (error) {
-      console.error("Error submitting quiz:", error);
-      Alert.alert("Lỗi", "Không thể nộp bài. Vui lòng thử lại.");
+      Alert.alert(t.common.error, t.quiz.retry);
     }
   };
 
@@ -126,10 +123,10 @@ export default function QuizScreen() {
 
   const handleSelect = (idx: number) => {
     if (selected !== null) return;
-    
+
     const isCorrect = q.answers[idx].correct;
     setSelected(idx);
-    
+
     const now = Date.now();
     const timeTaken = Math.round((now - questionStartTime) / 1000); // seconds
     const newAnswers = [...answers, {
@@ -139,7 +136,7 @@ export default function QuizScreen() {
       difficulty: q.difficulty || q?.metadata?.difficulty || 'intermediate',
     }];
     setAnswers(newAnswers);
-    
+
     const nextScore = isCorrect ? score + 1 : score;
     setTimeout(() => {
       setQuestionStartTime(Date.now());
@@ -149,10 +146,19 @@ export default function QuizScreen() {
 
   const q = questions[current];
 
-  // Debug log
-  console.log('questions:', questions);
-  console.log('current:', current);
-  console.log('q:', q);
+  // Lấy câu hỏi và đáp án theo ngôn ngữ nếu có
+  const getQuestionText = (q: any) => {
+    if (!q) return '';
+    if (language === 'vi' && q.question_vi) return q.question_vi;
+    if (language === 'en' && q.question_en) return q.question_en;
+    return q.question;
+  };
+  const getAnswerText = (ans: any) => {
+    if (!ans) return '';
+    if (language === 'vi' && ans.text_vi) return ans.text_vi;
+    if (language === 'en' && ans.text_en) return ans.text_en;
+    return ans.text;
+  };
 
   useEffect(() => {
     if (selected !== null || !q) return;
@@ -162,9 +168,9 @@ export default function QuizScreen() {
       } else {
         const now = Date.now();
         const timeTaken = Math.round((now - questionStartTime) / 1000); // seconds
-        const newAnswers = [...answers, { 
-          questionId: q.id, 
-          userAnswer: null, 
+        const newAnswers = [...answers, {
+          questionId: q.id,
+          userAnswer: null,
           timeTaken,
           difficulty: q.difficulty || q?.metadata?.difficulty || 'intermediate',
         }];
@@ -177,7 +183,7 @@ export default function QuizScreen() {
   }, [timer, selected, q]);
 
   if (!q) {
-    return <View style={styles.root}><Text>Loading question...</Text></View>
+    return <View style={styles.root}><Text>{t.common.loading}</Text></View>;
   }
 
   return (
@@ -190,7 +196,7 @@ export default function QuizScreen() {
           <AnimatedCircularProgress
             size={44}
             width={5}
-                fill={(timer / 10) * 100}
+            fill={(timer / 10) * 100}
             tintColor="#1976d2"
             backgroundColor="#e0e0e0"
             rotation={0}
@@ -200,52 +206,29 @@ export default function QuizScreen() {
           </AnimatedCircularProgress>
         </View>
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <TouchableOpacity style={styles.quizCloseBtn} onPress={() => router.replace('/(tabs)') }>
+          <TouchableOpacity style={styles.quizCloseBtn} onPress={() => router.replace('/(tabs)')}>
             <Ionicons name="close" size={28} color="#222" />
           </TouchableOpacity>
         </View>
       </View>
-      <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <View style={styles.robotWrap}>
-          <Image source={robotImg} style={styles.robot} />
-        </View>
-        <View style={styles.questionBox}>
-          <Text style={styles.questionText}>{q.question}</Text>
-        </View>
+      <View style={styles.robotWrap}>
+        <Image source={robotImg} style={styles.robot} />
       </View>
-      <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-        <View style={styles.answersWrap}>
-          {q.answers.map((ans: any, idx: number) => {
-            let color: 'blue' | 'red' | 'orange' | 'green' = 'blue';
-            if (idx === 0) color = 'blue';
-            else if (idx === 1) color = 'red';
-            else if (idx === 2) color = 'orange';
-            else if (idx === 3) color = 'green';
-                
-            let variant: 'default' | 'correct' | 'wrong' | 'faded' | 'warning' = 'default';
-            if (selected !== null) {
-              if (ans.correct) {
-                variant = 'correct';
-              } else if (idx === selected && !ans.correct) {
-                variant = 'wrong';
-                } else {
-                    variant = 'faded';
-              }
-            }
-            return (
-              <AnswerButton
-                key={ans.text}
-                text={ans.text}
-                color={color}
-                variant={variant}
-                onPress={() => handleSelect(idx)}
-                disabled={selected !== null}
-                    showIcon={variant === 'correct' || variant === 'wrong'}
-                    iconType={variant === 'correct' ? 'check' : 'close'}
-              />
-            );
-          })}
-        </View>
+      <View style={styles.questionWrap}>
+        <Text style={styles.questionText}>{getQuestionText(q)}</Text>
+      </View>
+      <View style={styles.answersWrap}>
+        {q.answers.map((ans: any, idx: number) => (
+          <AnswerButton
+            key={getAnswerText(ans)}
+            text={getAnswerText(ans)}
+            onPress={() => handleSelect(idx)}
+            disabled={selected !== null}
+            showIcon={selected !== null && idx === selected}
+            iconType={q.answers[idx].correct ? 'check' : 'close'}
+            variant={selected === null ? 'default' : idx === selected ? (q.answers[idx].correct ? 'correct' : 'wrong') : 'faded'}
+          />
+        ))}
       </View>
     </SafeAreaView>
   );
@@ -294,7 +277,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
   },
-  questionBox: {
+  questionWrap: {
     minHeight: 80,
     maxHeight: 120,
     justifyContent: 'center',

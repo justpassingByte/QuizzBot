@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Image, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useMemo } from 'react';
+import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AnswerButton from './components/AnswerButton';
+import { useLanguage } from './context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 const robotImg = require('../assets/images/robot2.png');
@@ -11,6 +11,7 @@ export default function QuizCorrectScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { explanation, current, total, score, topic, questions: questionsParam, selected, answers } = params;
+  const { t, language } = useLanguage();
 
   // Sử dụng useMemo để tránh tạo lại mảng questions trên mỗi lần render
   const questions = useMemo(() => (
@@ -48,13 +49,36 @@ export default function QuizCorrectScreen() {
     return () => clearTimeout(timeout);
   }, [current]);
 
+  // Lấy câu hỏi và đáp án theo ngôn ngữ nếu có
+  const getQuestionText = (q: any) => {
+    if (!q) return '';
+    if (language === 'vi' && q.question_vi) return q.question_vi;
+    if (language === 'en' && q.question_en) return q.question_en;
+    return q.question;
+  };
+  const getAnswerText = (ans: any) => {
+    if (!ans) return '';
+    if (language === 'vi' && ans.text_vi) return ans.text_vi;
+    if (language === 'en' && ans.text_en) return ans.text_en;
+    return ans.text;
+  };
+  const getExplanationText = () => {
+    if (Array.isArray(explanation)) return explanation.join(' ');
+    if (typeof explanation === 'object' && explanation !== null && !Array.isArray(explanation)) {
+      const exp: any = explanation;
+      if (language === 'vi' && exp.vi) return exp.vi;
+      if (language === 'en' && exp.en) return exp.en;
+    }
+    return explanation;
+  };
+
   return (
     <SafeAreaView style={styles.root}>
       <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
         {/* Banner Correct */}
         <View style={styles.bannerCorrect}>
-          <Text style={styles.bannerTitle}>Correct!</Text>
-          <Text style={styles.bannerBox}>Great job!</Text>
+          <Text style={styles.bannerTitle}>{t.quiz.correct}</Text>
+          <Text style={styles.bannerBox}>{'Great job!'}</Text>
         </View>
         {/* Robot */}
         <View style={styles.robotWrap}>
@@ -62,7 +86,7 @@ export default function QuizCorrectScreen() {
         </View>
         {/* Question */}
         <View style={styles.questionBox}>
-          <Text style={styles.questionText}>{questions[currentIdx]?.question}</Text>
+          <Text style={styles.questionText}>{getQuestionText(questions[currentIdx])}</Text>
         </View>
       </View>
       <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
@@ -80,8 +104,8 @@ export default function QuizCorrectScreen() {
             }
             return (
               <AnswerButton
-                key={ans.text}
-                text={ans.text}
+                key={getAnswerText(ans)}
+                text={getAnswerText(ans)}
                 variant={variant}
                 showIcon={showIcon}
                 iconType={iconType}
@@ -92,9 +116,9 @@ export default function QuizCorrectScreen() {
         </View>
         {/* Explanation */}
         <View style={styles.explanationContainer}>
-          <Text style={styles.explanationTitle}>Giải thích:</Text>
+          <Text style={styles.explanationTitle}>{t.quiz.explanation}</Text>
           <ScrollView style={styles.explanationScrollView}>
-            <Text style={styles.explanationText}>{explanation}</Text>
+            <Text style={styles.explanationText}>{getExplanationText()}</Text>
           </ScrollView>
         </View>
       </View>

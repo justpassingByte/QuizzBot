@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import useButtonSound from './components/useButtonSound';
+import { useLanguage } from './context/LanguageContext';
 import { useMusic } from './context/MusicContext';
 
 export default function MusicEffectsScreen() {
@@ -11,6 +12,7 @@ export default function MusicEffectsScreen() {
   const { musicEnabled, setMusicEnabled, soundEffectsEnabled, setSoundEffectsEnabled } = useMusic();
   const [vibrationsEnabled, setVibrationsEnabled] = useState(true);
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
+  const { t } = useLanguage();
 
   return (
     <LinearGradient colors={['#0a4cff', '#1c58f2']} style={styles.gradient}>
@@ -25,11 +27,11 @@ export default function MusicEffectsScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Music & Effects</Text>
+          <Text style={styles.headerTitle}>{t.settings.musicEffects}</Text>
         </View>
         <View style={styles.content}>
           <View style={styles.settingItem}>
-            <Text style={styles.settingText}>Music</Text>
+            <Text style={styles.settingText}>{t.settings.music}</Text>
             <Switch
               value={musicEnabled}
               onValueChange={(value) => {
@@ -41,7 +43,7 @@ export default function MusicEffectsScreen() {
             />
           </View>
           <View style={styles.settingItem}>
-            <Text style={styles.settingText}>Sound Effects</Text>
+            <Text style={styles.settingText}>{t.settings.soundEffects}</Text>
             <Switch
               value={soundEffectsEnabled}
               onValueChange={(value) => {
@@ -53,7 +55,7 @@ export default function MusicEffectsScreen() {
             />
           </View>
           <View style={styles.settingItem}>
-            <Text style={styles.settingText}>Vibrations</Text>
+            <Text style={styles.settingText}>{t.settings.vibrations}</Text>
             <Switch
               value={vibrationsEnabled}
               onValueChange={(value) => {
@@ -74,7 +76,7 @@ export default function MusicEffectsScreen() {
             }}
           >
             <Ionicons name="home" size={24} color="#bbb" />
-            <Text style={styles.tabText}>Home</Text>
+            <Text style={styles.tabText}>{t.settings.home}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tabItem}
@@ -84,7 +86,7 @@ export default function MusicEffectsScreen() {
             }}
           >
             <Ionicons name="person" size={24} color="#bbb" />
-            <Text style={styles.tabText}>Profile</Text>
+            <Text style={styles.tabText}>{t.settings.profile}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tabItem}
@@ -94,7 +96,7 @@ export default function MusicEffectsScreen() {
             }}
           >
             <Ionicons name="trophy" size={24} color="#bbb" />
-            <Text style={styles.tabText}>Leaderboard</Text>
+            <Text style={styles.tabText}>{t.settings.leaderboard}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tabItemActive}
@@ -104,7 +106,7 @@ export default function MusicEffectsScreen() {
             }}
           >
             <Ionicons name="grid" size={24} color="#1c58f2" />
-            <Text style={styles.tabTextActive}>More</Text>
+            <Text style={styles.tabTextActive}>{t.settings.more}</Text>
           </TouchableOpacity>
         </View> */}
       </SafeAreaView>

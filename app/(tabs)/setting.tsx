@@ -4,14 +4,21 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import useButtonSound from '../components/useButtonSound';
+import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useMusic } from '../context/MusicContext';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
+  const { language, t } = useLanguage();
+  const { signOut } = useAuth();
   const [notificationEnabled, setNotificationEnabled] = useState(true);
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
+
+  const getLanguageDisplayName = () => {
+    return language === 'en' ? t.settings.english : t.settings.vietnamese;
+  };
 
   return (
     <LinearGradient colors={['#0a4cff', '#1c58f2']} style={styles.gradient}>
@@ -26,7 +33,7 @@ export default function SettingsScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.headerTitle}>{t.settings.title}</Text>
         </View>
 
         <View style={styles.content}>
@@ -35,7 +42,7 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: '#ff4757' }]}>
                 <Ionicons name="notifications" size={20} color="#fff" />
               </View>
-              <Text style={styles.settingText}>Notification</Text>
+              <Text style={styles.settingText}>{t.settings.notifications}</Text>
             </View>
             <Switch
               value={notificationEnabled}
@@ -59,7 +66,7 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: '#5f27cd' }]}>
                 <Ionicons name="musical-notes" size={20} color="#fff" />
               </View>
-              <Text style={styles.settingText}>Music & Effects</Text>
+              <Text style={styles.settingText}>{t.settings.musicEffects}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#fff" />
           </TouchableOpacity>
@@ -68,17 +75,17 @@ export default function SettingsScreen() {
             style={styles.settingItem}
             onPress={() => {
               if (soundEffectsEnabled) playButtonSound();
-              // TODO: Thêm điều hướng hoặc logic chọn ngôn ngữ
+              router.push('/language-selector');
             }}
           >
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: '#00d2d3' }]}>
                 <Ionicons name="language" size={20} color="#fff" />
               </View>
-              <Text style={styles.settingText}>Language</Text>
+              <Text style={styles.settingText}>{t.settings.language}</Text>
             </View>
             <View style={styles.languageSelector}>
-              <Text style={styles.languageText}>{selectedLanguage}</Text>
+              <Text style={styles.languageText}>{getLanguageDisplayName()}</Text>
               <Ionicons name="chevron-down" size={16} color="#666" style={styles.dropdownIcon} />
             </View>
           </TouchableOpacity>
@@ -94,30 +101,31 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: '#a55eea' }]}>
                 <Ionicons name="information-circle" size={20} color="#fff" />
               </View>
-              <Text style={styles.settingText}>About Quizzie Bot</Text>
+              <Text style={styles.settingText}>{t.settings.about}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#fff" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.settingItem}
-            onPress={() => {
+            onPress={async () => {
               if (soundEffectsEnabled) playButtonSound();
-              // TODO: Thêm logic đăng xuất
+              await signOut();
+              router.replace('/signin');
             }}
           >
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: '#ff6b6b' }]}>
                 <Ionicons name="log-out" size={20} color="#fff" />
               </View>
-              <Text style={styles.settingText}>Logout</Text>
+              <Text style={styles.settingText}>{t.settings.logout}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Privacy Policy & Quizzie Bot</Text>
+          <Text style={styles.footerText}>{t.settings.privacyPolicy}</Text>
         </View>
       </SafeAreaView>
     </LinearGradient>

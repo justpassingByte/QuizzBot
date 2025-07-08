@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
-import { fetchQuizzes, getQuestionById, fetchRecommendedQuizzes } from '../constants/api';
-import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { fetchRecommendedQuizzes, getQuestionById } from '../constants/api';
 import { useAuth } from './context/AuthContext';
 
 const { width } = Dimensions.get('window');

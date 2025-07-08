@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import useButtonSound from '../components/useButtonSound';
-import { useMusic } from '../context/MusicContext';
-import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../../constants/api';
+import useButtonSound from '../components/useButtonSound';
+import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useMusic } from '../context/MusicContext';
 
 // Định nghĩa kiểu cho dữ liệu thống kê
 interface UserStatistics {
@@ -25,6 +26,7 @@ export default function ProfileScreen() {
   console.log('DEBUG profile user:', user);
   const [statistics, setStatistics] = useState<UserStatistics | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -81,10 +83,10 @@ export default function ProfileScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
+          <Text style={styles.headerTitle}>{t.profile.title}</Text>
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.headerIcon}>
-              <Text style={styles.levelBadge}>L1</Text>
+              <Text style={styles.levelBadge}>{t.profile.level} 1</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.headerIcon}>
               <Ionicons name="trophy" size={20} color="#ffd700" />
@@ -108,7 +110,7 @@ export default function ProfileScreen() {
                 style={styles.profileImage}
               />
             </View>
-            <Text style={styles.profileName}>{user?.username || 'Guest'}</Text>
+            <Text style={styles.profileName}>{user?.username || t.profile.guest}</Text>
             <Text style={styles.profileUsername}>@{user?.username?.toLowerCase() || 'guest'}</Text>
             
             <TouchableOpacity 
@@ -118,7 +120,7 @@ export default function ProfileScreen() {
                 router.push('../edit-profile');
               }}
             >
-              <Text style={styles.editButtonText}>Edit Profile</Text>
+              <Text style={styles.editButtonText}>{t.profile.editProfile}</Text>
             </TouchableOpacity>
           </View>
           
@@ -128,24 +130,24 @@ export default function ProfileScreen() {
               <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
                   <Text style={styles.statNumber}>{statistics?.totalQuizzesCompleted ?? 0}</Text>
-                  <Text style={styles.statLabel}>Quizzes</Text>
+                  <Text style={styles.statLabel}>{t.profile.quizzes}</Text>
                 </View>
                 <View style={styles.statItem}>
                   <Text style={styles.statNumber}>{user?.score ?? 0}</Text>
-                  <Text style={styles.statLabel}>Points</Text>
+                  <Text style={styles.statLabel}>{t.profile.points}</Text>
                 </View>
                 <View style={styles.statItem}>
                   <Text style={styles.statNumber}>{statistics?.averageScore.toFixed(1) ?? 0}</Text>
-                  <Text style={styles.statLabel}>Avg. Score</Text>
+                  <Text style={styles.statLabel}>{t.profile.avgScore}</Text>
                 </View>
               </View>
 
               {/* Chart */}
               <View style={styles.chartSection}>
-                <Text style={styles.sectionTitle}>My Statistics</Text>
+                <Text style={styles.sectionTitle}>{t.profile.statistics}</Text>
                 <View style={styles.chartContainer}>
-                  <Text style={styles.chartTitle}>Your Activity this Week</Text>
-                  <Text style={styles.chartPoints}>{statistics?.totalQuizzesCompleted ?? 0} Quizzes</Text>
+                  <Text style={styles.chartTitle}>{t.profile.activityThisWeek}</Text>
+                  <Text style={styles.chartPoints}>{statistics?.totalQuizzesCompleted ?? 0} {t.profile.quizzes}</Text>
                   {chartData.labels && chartData.labels.length > 0 ? (
                     <LineChart
                       data={chartData}
@@ -173,26 +175,36 @@ export default function ProfileScreen() {
                       style={styles.chart}
                     />
                   ) : (
-                    <Text style={styles.noDataText}>No activity data available.</Text>
+                    <Text style={styles.noDataText}>{t.profile.noActivityData}</Text>
                   )}
                 </View>
               </View>
 
               {/* Achievements */}
               <View style={styles.achievementsSection}>
-                <Text style={styles.sectionTitle}>Your Achievements</Text>
+                <Text style={styles.sectionTitle}>{t.profile.achievements}</Text>
                 <View style={styles.achievementsGrid}>
-                  {achievements.map((achievement, index) => (
-                    <View key={index} style={styles.achievementCard}>
-                      <Ionicons 
-                        name={achievement.icon as any} 
-                        size={24} 
-                        color={achievement.color} 
-                      />
-                      <Text style={styles.achievementNumber}>{achievement.count}</Text>
-                      <Text style={styles.achievementLabel}>{achievement.label}</Text>
-                    </View>
-                  ))}
+                  {achievements.map((achievement, index) => {
+                    let labelKey: keyof typeof t.profile;
+                    switch (achievement.label) {
+                      case 'Quizzes': labelKey = 'quizzes'; break;
+                      case 'Lifetime Point': labelKey = 'lifetimePoints'; break;
+                      case 'Quiz Passed': labelKey = 'quizPassed'; break;
+                      case 'Avg. Score': labelKey = 'avgScore'; break;
+                      default: labelKey = 'achievements';
+                    }
+                    return (
+                      <View key={index} style={styles.achievementCard}>
+                        <Ionicons 
+                          name={achievement.icon as any} 
+                          size={24} 
+                          color={achievement.color} 
+                        />
+                        <Text style={styles.achievementNumber}>{achievement.count}</Text>
+                        <Text style={styles.achievementLabel}>{t.profile[labelKey]}</Text>
+                      </View>
+                    );
+                  })}
                 </View>
               </View>
             </>

@@ -5,7 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text } from 'react-native';
 import { useMusic } from '../context/MusicContext';
 
 function AppMusicWrapper({ children }: { children: React.ReactNode }) {

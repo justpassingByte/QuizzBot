@@ -4,14 +4,16 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import useButtonSound from '../components/useButtonSound';
-import { useMusic } from '../context/MusicContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useMusic } from '../context/MusicContext';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { soundEffectsEnabled } = useMusic();
   const { playButtonSound } = useButtonSound(soundEffectsEnabled);
   const { user } = useAuth();
+  const { t } = useLanguage();
   const avatarUrl = user?.id ? `https://api.dicebear.com/8.x/initials/png?seed=${user.username}` : require('../../assets/images/avatar-default.png');
 
   return (
@@ -30,7 +32,7 @@ export default function HomeScreen() {
                 style={styles.avatar}
               />
             </TouchableOpacity>
-            <Text style={styles.profileName}>{user?.username || 'Guest'}</Text>
+            <Text style={styles.profileName}>{user?.username || t.home.guest}</Text>
           </View>
           <View style={styles.topRight}>
             <View style={styles.coinBox}>
@@ -81,7 +83,7 @@ export default function HomeScreen() {
         </View>
         <View style={styles.bottomContent}>
           <Text style={styles.slogan}>
-            Unleash the power of AI!{"\n"}Discover quizzes made just for you
+            {t.home.slogan}
           </Text>
           <TouchableOpacity
             style={styles.playNowBtn}
@@ -90,7 +92,7 @@ export default function HomeScreen() {
               router.push('/arcade');
             }}
           >
-            <Text style={styles.playNowText}>Play Now</Text>
+            <Text style={styles.playNowText}>{t.home.playNow}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.createQuizBtn}
@@ -101,7 +103,7 @@ export default function HomeScreen() {
             }}
           >
             <Text style={styles.createQuizText}>
-              Create your own quiz by <Text style={{ fontWeight: 'bold' }}>QUIZZIE BOT</Text>
+              {t.home.createQuiz}
             </Text>
           </TouchableOpacity>
         </View>

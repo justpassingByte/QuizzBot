@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from './context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 const trophyImg = require('../assets/images/tropy.png');
@@ -10,6 +11,7 @@ const coinImg = require('../assets/images/coin.png');
 export default function QuizResultScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -48,36 +50,36 @@ export default function QuizResultScreen() {
   return (
     <SafeAreaView style={styles.root}>
       <View style={{flex: 2, alignItems: 'center', justifyContent: 'flex-start'}}>
-        <Text style={styles.resultTitle}>Result</Text>
+        <Text style={styles.resultTitle}>{t.quiz.result}</Text>
         <Image source={trophyImg} style={styles.resultIcon} />
-        <Text style={styles.achievementHeader}>Your Achievements</Text>
+        <Text style={styles.achievementHeader}>{t.quiz.achievements}</Text>
         <View style={styles.achievementsWrap}>
           <View style={styles.achievementBox}>
             <Image source={coinImg} style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
               <Text style={styles.achievementValue}>{coinsEarned}</Text>
-              <Text style={styles.achievementLabel}>Coins Earned</Text>
+              <Text style={styles.achievementLabel}>{t.quiz.coinsEarned}</Text>
             </View>
           </View>
           <View style={styles.achievementBox}>
             <Ionicons name="flash" size={32} color="#ffcc4d" style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
               <Text style={styles.achievementValue}>{xpEarned}</Text>
-              <Text style={styles.achievementLabel}>XP</Text>
+              <Text style={styles.achievementLabel}>{t.quiz.xpEarned}</Text>
             </View>
           </View>
           <View style={styles.achievementBox}>
             <Ionicons name="time" size={32} color="#285ecc" style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
               <Text style={styles.achievementValue}>{totalTime !== null ? `${totalTime}s` : '-'}</Text>
-              <Text style={styles.achievementLabel}>Total Time</Text>
+              <Text style={styles.achievementLabel}>{t.quiz.timeTaken}</Text>
             </View>
           </View>
           <View style={styles.achievementBox}>
             <Ionicons name="checkmark-circle" size={32} color="#00b676" style={styles.achievementIconImg} />
             <View style={styles.achievementTextWrap}>
               <Text style={styles.achievementValue}>{correctAnswers}</Text>
-              <Text style={styles.achievementLabel}>Correct Questions</Text>
+              <Text style={styles.achievementLabel}>{t.quiz.correctAnswers}</Text>
             </View>
           </View>
         </View>
@@ -86,7 +88,7 @@ export default function QuizResultScreen() {
         {/* Gợi ý quiz liên quan */}
         {relatedQuizzes && relatedQuizzes.length > 0 ? (
           <View style={{ marginTop: 16, width: 340 }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Related Quizzes:</Text>
+            <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>{t.quiz.relatedQuizzes}</Text>
             {relatedQuizzes.map((quiz, idx) => (
               <View key={quiz.id || idx} style={{
                 backgroundColor: '#f5f7fa',
@@ -103,31 +105,31 @@ export default function QuizResultScreen() {
               }}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontWeight: 'bold', fontSize: 15 }}>{quiz.topicName || quiz.topicSlug}</Text>
-                  <Text style={{ color: '#888', fontSize: 13 }}>Questions: {quiz.questionCount}</Text>
+                  <Text style={{ color: '#888', fontSize: 13 }}>{t.quiz.totalQuestions}: {quiz.questionCount}</Text>
                 </View>
                 <TouchableOpacity
                   style={{ backgroundColor: '#1c58f2', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16 }}
                   onPress={() => router.push({ pathname: '/loading-quiz', params: { topic: quiz.topicSlug } })}
                 >
-                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Start</Text>
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t.quiz.next}</Text>
                 </TouchableOpacity>
               </View>
             ))}
           </View>
         ) : (
-          <Text style={{ color: '#888', marginTop: 16 }}>No related quizzes found.</Text>
+          <Text style={{ color: '#888', marginTop: 16 }}>{t.quiz.noRelatedQuizzes}</Text>
         )}
         {/* Retry Button */}
         <TouchableOpacity style={styles.retryBtn} onPress={() => router.back()}>
-          <Text style={styles.retryText}>↻  Retry</Text>
+          <Text style={styles.retryText}> [21bb  {t.quiz.retry}</Text>
         </TouchableOpacity>
         {/* Share & Home Buttons */}
         <View style={styles.bottomRow}>
           <TouchableOpacity style={styles.bottomBtn} onPress={() => router.push('/(tabs)')}>
-            <Text style={styles.bottomBtnText}>🏠  Home</Text>
+            <Text style={styles.bottomBtnText}> [1f3e0  {t.common.home}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.bottomBtn}>
-            <Text style={styles.bottomBtnText}>🔗  Share</Text>
+            <Text style={styles.bottomBtnText}> [1f517  {t.quiz.share}</Text>
           </TouchableOpacity>
         </View>
       </View>
